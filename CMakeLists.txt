@@ -28,6 +28,17 @@ find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets Core Gui)
 find_package(ZLIB REQUIRED)
 
 # ==============================================================================
+# PDFium Dependency Setup
+# ==============================================================================
+if(WIN32)
+    set(PDFIUM_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/windows-x64/include")
+    set(PDFIUM_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/windows-x64/lib/pdfium.dll.lib")
+else()
+    set(PDFIUM_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/include")
+    set(PDFIUM_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/lib/libpdfium.dylib")
+endif()
+
+# ==============================================================================
 # Target 1: DsaLib (Pure custom algorithmic data structures - Zero STL)
 # ==============================================================================
 add_library(DsaLib STATIC
@@ -72,11 +83,13 @@ target_include_directories(SearchEngineCore PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/pugixml
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/miniz
+    ${PDFIUM_INCLUDE_DIR}
 )
 
 target_link_libraries(SearchEngineCore PUBLIC
     DsaLib
     ZLIB::ZLIB
+    ${PDFIUM_LIBRARY}
 )
 
 set_project_warnings(SearchEngineCore)
@@ -103,6 +116,21 @@ target_link_libraries(SearchEngineApp PRIVATE
 
 set_project_warnings(SearchEngineApp)
 enable_sanitizers(SearchEngineApp)
+
+if(APPLE)
+    set_target_properties(SearchEngineApp PROPERTIES
+        BUILD_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/lib"
+        INSTALL_RPATH "@executable_path/../lib;${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/lib"
+    )
+endif()
+
+if(WIN32)
+    add_custom_command(TARGET SearchEngineApp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/windows-x64/bin/pdfium.dll"
+        $<TARGET_FILE_DIR:SearchEngineApp>
+    )
+endif()
 
 # ==============================================================================
 # Target 4: UnitTestsRunner (Test Suite)

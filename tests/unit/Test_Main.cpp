@@ -35,6 +35,7 @@ namespace sse::test {
     void runExtractionCacheTests();
     void runExtractionManagerTests();
     void runPhase41HardeningTests();
+    void runPhase42ComplianceTests();
 }
 
 int main() {
@@ -86,6 +87,7 @@ int main() {
     sse::test::runExtractionCacheTests();
     sse::test::runExtractionManagerTests();
     sse::test::runPhase41HardeningTests();
+    sse::test::runPhase42ComplianceTests();
 
     // 5. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;

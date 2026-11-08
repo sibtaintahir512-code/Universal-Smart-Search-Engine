@@ -27,6 +27,7 @@ add_executable(UnitTestsRunner
     unit/Test_ExtractionCache.cpp
     unit/Test_ExtractionManager.cpp
     unit/Test_Phase41_Hardening.cpp
+    unit/Test_Phase42_Compliance.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE
@@ -41,5 +42,20 @@ target_link_libraries(UnitTestsRunner PRIVATE
 
 set_project_warnings(UnitTestsRunner)
 enable_sanitizers(UnitTestsRunner)
+
+if(APPLE)
+    set_target_properties(UnitTestsRunner PROPERTIES
+        BUILD_RPATH "${CMAKE_SOURCE_DIR}/third_party/pdfium/lib"
+        INSTALL_RPATH "@executable_path/../lib;${CMAKE_SOURCE_DIR}/third_party/pdfium/lib"
+    )
+endif()
+
+if(WIN32)
+    add_custom_command(TARGET UnitTestsRunner POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/third_party/pdfium/windows-x64/bin/pdfium.dll"
+        $<TARGET_FILE_DIR:UnitTestsRunner>
+    )
+endif()
 
 add_test(NAME UnitTestsRunner COMMAND UnitTestsRunner)

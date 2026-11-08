@@ -6,6 +6,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.2] - Phase 4.2 Complete (November 2026)
+
+### Added
+- **Production PDF Extraction Engine (Google PDFium):**
+  - Integrated official Google PDFium C library (Chromium engine) for Windows x64 and macOS ARM64.
+  - Page-by-page bounded text extraction, reading order preservation, and page count parsing.
+  - Full UTF-16LE surrogate pair decoding into standard RFC 3629 UTF-8.
+  - Dedicated password encryption detection (`FPDF_ERR_PASSWORD` $\to$ `Encrypted`).
+  - Fallback parser preserves 100% backward compatibility for legacy non-standard test streams.
+- **Office XML Security Hardening (`OfficeExtractor`):**
+  - Completely eliminated unsafe regex tag-stripping fallback in `stripXmlAndDecode`.
+  - Malformed XML documents immediately return `ExtractionStatus::Corrupted`.
+  - Validated external entity resolution (XXE) and DTD fetching remain disabled in `pugixml`.
+- **ZIP Decompression Security Hardening:**
+  - Replaced integer division in compression ratio check with overflow-safe multiplication.
+  - Explicitly rejected zero-compressed size entries declaring non-zero uncompressed size.
+  - Pre-allocation size validation enforcing entry and cumulative memory bounds before buffer resizing.
+- **XLSX Relationship-Based Worksheet Order:**
+  - Resolved worksheet ordering by parsing `xl/workbook.xml` manifest and `xl/_rels/workbook.xml.rels`.
+  - Preserves author-intended presentation order instead of arbitrary filename sorting.
+  - Added support for inline strings (`<is><t>`) and empty cells.
+- **Output Limit Enforcement:**
+  - Enforced `maxBytes` output bounding during node and page traversal across PDF, DOCX, PPTX, and XLSX.
+- **Testing & Quality Assurance:**
+  - Added `tests/unit/Test_Phase42_Compliance.cpp` with 37 new targeted compliance assertions.
+  - Total integrated test suite increased to 1,664 assertions (100% pass rate, 0 failures, 0 sanitizer errors).
+- **Documentation:**
+  - `docs/PHASE_4_2_INITIAL_AUDIT.md`: Pre-implementation defect audit and PDF library comparison.
+  - `docs/PHASE_4_2_COMPLIANCE_REPORT.md`: Final Quality Assurance and Compliance Report.
+
+---
+
 ## [0.4.1] - Phase 4.1 Complete (November 2026)
 
 ### Added
