@@ -4,7 +4,10 @@
 #include <chrono>
 #include <cstring>
 #include <algorithm>
-#include <zlib.h>
+#include <sstream>
+#include <unordered_map>
+#include <pugixml.hpp>
+#include <miniz.h>
 
 namespace sse::extraction {
 
@@ -49,7 +52,6 @@ std::string OfficeExtractor::decodeXmlEntities(const std::string& text) {
                     i = semi + 1;
                     continue;
                 } else if (!entity.empty() && entity[0] == '#') {
-                    // Numeric entity &#123; or &#x1F;
                     try {
                         uint32_t cp = 0;
                         if (entity.size() > 1 && (entity[1] == 'x' || entity[1] == 'X')) {
@@ -83,93 +85,367 @@ std::string OfficeExtractor::decodeXmlEntities(const std::string& text) {
 }
 
 std::string OfficeExtractor::stripXmlAndDecode(const std::string& xml) {
-    std::string text;
-    text.reserve(xml.size() / 2);
-
-    bool insideTag = false;
-    std::string currentTag;
-
-    for (std::size_t i = 0; i < xml.size(); ++i) {
-        char c = xml[i];
-
-        if (c == '<') {
-            insideTag = true;
-            currentTag.clear();
-        } else if (c == '>') {
-            insideTag = false;
-            // Paragraph breaks in OOXML
-            if (currentTag == "w:p" || currentTag == "/w:p" ||
-                currentTag == "a:p" || currentTag == "/a:p" ||
-                currentTag == "row" || currentTag == "/row" ||
-                currentTag == "w:br" || currentTag == "w:br/") {
-                if (!text.empty() && text.back() != '\n') {
-                    text.push_back('\n');
-                }
-            } else if (currentTag == "w:tab/" || currentTag == "w:tab") {
-                text.push_back('\t');
-            } else if (currentTag == "c" || currentTag == "/c") {
-                if (!text.empty() && text.back() != ' ' && text.back() != '\n') {
-                    text.push_back(' ');
-                }
-            }
-        } else if (insideTag) {
-            if (currentTag.size() < 16) {
-                currentTag.push_back(c);
-            }
-        } else {
-            text.push_back(c);
+    pugi::xml_document doc;
+    pugi::xml_parse_result parseRes = doc.load_buffer(xml.data(), xml.size(), pugi::parse_default);
+    if (!parseRes) {
+        // Fallback for malformed XML fragment: remove tags directly
+        std::string text;
+        text.reserve(xml.size() / 2);
+        bool inside = false;
+        for (char c : xml) {
+            if (c == '<') inside = true;
+            else if (c == '>') inside = false;
+            else if (!inside) text.push_back(c);
         }
+        return decodeXmlEntities(text);
     }
 
+    std::string text;
+    pugi::xpath_node_set paras = doc.select_nodes("//w:p | //a:p | //p | //row");
+    if (!paras.empty()) {
+        for (pugi::xpath_node pNode : paras) {
+            std::string pText;
+            for (pugi::xpath_node tNode : pNode.node().select_nodes(".//text()")) {
+                pText += tNode.node().value();
+            }
+            if (!pText.empty()) {
+                if (!text.empty()) text.push_back('\n');
+                text += pText;
+            }
+        }
+        return decodeXmlEntities(text);
+    }
+
+    for (pugi::xpath_node xpNode : doc.select_nodes("//text()")) {
+        pugi::xml_node node = xpNode.node();
+        std::string val = node.value();
+        if (!val.empty()) {
+            if (!text.empty() && text.back() != ' ' && text.back() != '\n') {
+                text.push_back(' ');
+            }
+            text += val;
+        }
+    }
     return decodeXmlEntities(text);
 }
 
 namespace {
-    // Structure representing a parsed ZIP Central Directory record
-    struct ZipFileEntry {
-        std::string filename;
-        uint16_t    compressionMethod{0};
-        uint32_t    compressedSize{0};
-        uint32_t    uncompressedSize{0};
-        uint32_t    localHeaderOffset{0};
-    };
 
-    // Helper to read unaligned uint16
-    uint16_t readU16(const uint8_t* p) {
-        return static_cast<uint16_t>(p[0] | (static_cast<uint16_t>(p[1]) << 8));
-    }
+// Helper to safely extract a zip entry into a string with decompression limits
+bool extractZipEntryToMemory(mz_zip_archive& zip,
+                            mz_uint fileIndex,
+                            std::string& outData,
+                            uint64_t& cumulativeDecompressed,
+                            uint64_t maxDecompressedEntry = 50ULL * 1024 * 1024,
+                            uint64_t maxCumulativeBytes = 100ULL * 1024 * 1024,
+                            uint32_t maxRatio = 100) {
+    mz_zip_archive_file_stat stat;
+    if (!mz_zip_reader_file_stat(&zip, fileIndex, &stat)) return false;
 
-    // Helper to read unaligned uint32
-    uint32_t readU32(const uint8_t* p) {
-        return static_cast<uint32_t>(p[0]) |
-               (static_cast<uint32_t>(p[1]) << 8) |
-               (static_cast<uint32_t>(p[2]) << 16) |
-               (static_cast<uint32_t>(p[3]) << 24);
-    }
+    // Reject entries exceeding size limits
+    if (stat.m_uncomp_size > maxDecompressedEntry) return false;
+    if ((cumulativeDecompressed + stat.m_uncomp_size) > maxCumulativeBytes) return false;
 
-    // Decompress raw deflate data using zlib
-    bool decompressDeflate(const uint8_t* src, std::size_t srcLen,
-                           std::vector<char>& dst, std::size_t expectedSize) {
-        dst.resize(expectedSize);
-        z_stream strm;
-        std::memset(&strm, 0, sizeof(strm));
+    // Check compression ratio
+    if (stat.m_comp_size > 0 && (stat.m_uncomp_size / stat.m_comp_size) > maxRatio) return false;
 
-        // -MAX_WBITS specifies raw deflate without zlib/gzip headers
-        if (inflateInit2(&strm, -MAX_WBITS) != Z_OK) {
+    outData.resize(static_cast<std::size_t>(stat.m_uncomp_size));
+    if (stat.m_uncomp_size > 0) {
+        if (!mz_zip_reader_extract_to_mem(&zip, fileIndex, outData.data(), outData.size(), 0)) {
+            outData.clear();
             return false;
         }
+    }
 
-        strm.next_in = const_cast<Bytef*>(reinterpret_cast<const Bytef*>(src));
-        strm.avail_in = static_cast<uInt>(srcLen);
-        strm.next_out = reinterpret_cast<Bytef*>(dst.data());
-        strm.avail_out = static_cast<uInt>(dst.size());
+    cumulativeDecompressed += stat.m_uncomp_size;
+    return true;
+}
 
-        int ret = inflate(&strm, Z_FINISH);
-        inflateEnd(&strm);
+// Find index of entry by exact or case-insensitive name
+int findZipEntryIndex(mz_zip_archive& zip, const std::string& name) {
+    int idx = mz_zip_reader_locate_file(&zip, name.c_str(), nullptr, 0);
+    if (idx >= 0) return idx;
 
-        return (ret == Z_STREAM_END || ret == Z_OK);
+    // Case-insensitive fallback
+    mz_uint numFiles = mz_zip_reader_get_num_files(&zip);
+    for (mz_uint i = 0; i < numFiles; ++i) {
+        mz_zip_archive_file_stat stat;
+        if (mz_zip_reader_file_stat(&zip, i, &stat)) {
+            std::string entryName = stat.m_filename;
+            if (entryName.size() == name.size()) {
+                bool match = true;
+                for (std::size_t c = 0; c < name.size(); ++c) {
+                    if (std::tolower(static_cast<unsigned char>(entryName[c])) !=
+                        std::tolower(static_cast<unsigned char>(name[c]))) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return static_cast<int>(i);
+            }
+        }
+    }
+    return -1;
+}
+
+// Extract text runs from a DOCX body node
+void extractDocxNode(const pugi::xml_node& node, std::string& outText, uint64_t maxBytes) {
+    for (pugi::xml_node child : node.children()) {
+        if (outText.size() >= maxBytes) return;
+
+        std::string name = child.name();
+        if (name == "w:p") {
+            for (pugi::xml_node pChild : child.children()) {
+                std::string pName = pChild.name();
+                if (pName == "w:r") {
+                    for (pugi::xml_node rChild : pChild.children()) {
+                        std::string rName = rChild.name();
+                        if (rName == "w:t") {
+                            outText += rChild.text().get();
+                        } else if (rName == "w:tab") {
+                            outText.push_back('\t');
+                        } else if (rName == "w:br") {
+                            outText.push_back('\n');
+                        }
+                    }
+                }
+            }
+            if (!outText.empty() && outText.back() != '\n') {
+                outText.push_back('\n');
+            }
+        } else if (name == "w:tbl") {
+            for (pugi::xml_node row : child.children("w:tr")) {
+                for (pugi::xml_node cell : row.children("w:tc")) {
+                    extractDocxNode(cell, outText, maxBytes);
+                    if (!outText.empty() && outText.back() != '\t' && outText.back() != '\n') {
+                        outText.push_back('\t');
+                    }
+                }
+                if (!outText.empty() && outText.back() != '\n') {
+                    outText.push_back('\n');
+                }
+            }
+        } else {
+            extractDocxNode(child, outText, maxBytes);
+        }
     }
 }
+
+// Extract PPTX slide texts using ordered relationships
+void extractPptxText(mz_zip_archive& zip,
+                     std::string& outText,
+                     uint64_t maxBytes,
+                     uint64_t& cumulativeBytes) {
+    // 1. Read ppt/_rels/presentation.xml.rels
+    std::unordered_map<std::string, std::string> relIdToTarget;
+    int relIdx = findZipEntryIndex(zip, "ppt/_rels/presentation.xml.rels");
+    if (relIdx >= 0) {
+        std::string relXml;
+        if (extractZipEntryToMemory(zip, static_cast<mz_uint>(relIdx), relXml, cumulativeBytes)) {
+            pugi::xml_document doc;
+            if (doc.load_buffer(relXml.data(), relXml.size())) {
+                for (pugi::xml_node rel : doc.child("Relationships").children("Relationship")) {
+                    std::string id = rel.attribute("Id").as_string();
+                    std::string target = rel.attribute("Target").as_string();
+                    if (!id.empty() && !target.empty()) {
+                        // Normalize target relative to ppt/
+                        if (target.rfind("ppt/", 0) != 0 && target.rfind("/", 0) != 0) {
+                            target = "ppt/" + target;
+                        }
+                        relIdToTarget[id] = target;
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Read ppt/presentation.xml to get true ordered slides
+    std::vector<std::string> orderedSlidePaths;
+    int presIdx = findZipEntryIndex(zip, "ppt/presentation.xml");
+    if (presIdx >= 0) {
+        std::string presXml;
+        if (extractZipEntryToMemory(zip, static_cast<mz_uint>(presIdx), presXml, cumulativeBytes)) {
+            pugi::xml_document doc;
+            if (doc.load_buffer(presXml.data(), presXml.size())) {
+                pugi::xml_node sldIdLst = doc.select_node("//p:sldIdLst").node();
+                for (pugi::xml_node sldId : sldIdLst.children("p:sldId")) {
+                    std::string rId = sldId.attribute("r:id").as_string();
+                    auto it = relIdToTarget.find(rId);
+                    if (it != relIdToTarget.end()) {
+                        orderedSlidePaths.push_back(it->second);
+                    }
+                }
+            }
+        }
+    }
+
+    // Fallback: If presentation manifest missing, collect and numerically sort slide*.xml
+    if (orderedSlidePaths.empty()) {
+        mz_uint numFiles = mz_zip_reader_get_num_files(&zip);
+        std::vector<std::pair<int, std::string>> slideEntries;
+        for (mz_uint i = 0; i < numFiles; ++i) {
+            mz_zip_archive_file_stat stat;
+            if (mz_zip_reader_file_stat(&zip, i, &stat)) {
+                std::string name = stat.m_filename;
+                if (name.rfind("ppt/slides/slide", 0) == 0 && name.find(".xml") != std::string::npos) {
+                    // Extract numeric index
+                    std::size_t numStart = 16; // "ppt/slides/slide"
+                    std::size_t dot = name.find(".xml", numStart);
+                    int sNum = 0;
+                    try {
+                        sNum = std::stoi(name.substr(numStart, dot - numStart));
+                    } catch (...) {}
+                    slideEntries.push_back({sNum, name});
+                }
+            }
+        }
+        std::sort(slideEntries.begin(), slideEntries.end());
+        for (const auto& item : slideEntries) {
+            orderedSlidePaths.push_back(item.second);
+        }
+    }
+
+    // 3. Extract text from each slide in guaranteed order
+    for (const auto& slidePath : orderedSlidePaths) {
+        if (outText.size() >= maxBytes) break;
+
+        int slideIdx = findZipEntryIndex(zip, slidePath);
+        if (slideIdx < 0) continue;
+
+        std::string slideXml;
+        if (!extractZipEntryToMemory(zip, static_cast<mz_uint>(slideIdx), slideXml, cumulativeBytes)) continue;
+
+        pugi::xml_document doc;
+        if (!doc.load_buffer(slideXml.data(), slideXml.size())) continue;
+
+        for (pugi::xpath_node xpNode : doc.select_nodes("//a:p")) {
+            pugi::xml_node node = xpNode.node();
+            std::string paraText;
+            for (pugi::xpath_node xpTNode : node.select_nodes(".//a:t")) {
+                paraText += xpTNode.node().text().get();
+            }
+            if (!paraText.empty()) {
+                if (!outText.empty() && outText.back() != '\n') {
+                    outText.push_back('\n');
+                }
+                outText += paraText;
+            }
+        }
+    }
+}
+
+// Extract XLSX shared strings and worksheets
+void extractXlsxText(mz_zip_archive& zip,
+                     std::string& outText,
+                     uint64_t maxBytes,
+                     uint64_t& cumulativeBytes) {
+    // 1. Extract shared strings table: xl/sharedStrings.xml
+    std::vector<std::string> sharedStrings;
+    int ssIdx = findZipEntryIndex(zip, "xl/sharedStrings.xml");
+    if (ssIdx >= 0) {
+        std::string ssXml;
+        if (extractZipEntryToMemory(zip, static_cast<mz_uint>(ssIdx), ssXml, cumulativeBytes)) {
+            pugi::xml_document doc;
+            if (doc.load_buffer(ssXml.data(), ssXml.size())) {
+                for (pugi::xpath_node xpSi : doc.select_nodes("//si")) {
+                    pugi::xml_node si = xpSi.node();
+                    std::string itemText;
+                    pugi::xml_node tDirect = si.child("t");
+                    if (tDirect) {
+                        itemText = tDirect.text().get();
+                    } else {
+                        for (pugi::xml_node rNode : si.children("r")) {
+                            itemText += rNode.child("t").text().get();
+                        }
+                    }
+                    sharedStrings.push_back(std::move(itemText));
+                }
+            }
+        }
+    }
+
+    // 2. Locate worksheet entries
+    mz_uint numFiles = mz_zip_reader_get_num_files(&zip);
+    std::vector<std::string> sheetPaths;
+    for (mz_uint i = 0; i < numFiles; ++i) {
+        mz_zip_archive_file_stat stat;
+        if (mz_zip_reader_file_stat(&zip, i, &stat)) {
+            std::string name = stat.m_filename;
+            if (name.rfind("xl/worksheets/sheet", 0) == 0 && name.find(".xml") != std::string::npos) {
+                sheetPaths.push_back(name);
+            }
+        }
+    }
+    std::sort(sheetPaths.begin(), sheetPaths.end());
+
+    // 3. Extract cell values from worksheets
+    for (const auto& sheetPath : sheetPaths) {
+        if (outText.size() >= maxBytes) break;
+
+        int sheetIdx = findZipEntryIndex(zip, sheetPath);
+        if (sheetIdx < 0) continue;
+
+        std::string sheetXml;
+        if (!extractZipEntryToMemory(zip, static_cast<mz_uint>(sheetIdx), sheetXml, cumulativeBytes)) continue;
+
+        pugi::xml_document doc;
+        if (!doc.load_buffer(sheetXml.data(), sheetXml.size())) continue;
+
+        for (pugi::xpath_node xpRow : doc.select_nodes("//row")) {
+            pugi::xml_node row = xpRow.node();
+            std::string rowText;
+            for (pugi::xml_node c : row.children("c")) {
+                std::string type = c.attribute("t").as_string();
+                std::string cellVal;
+
+                if (type == "s") {
+                    // Shared string index
+                    std::string idxStr = c.child("v").text().get();
+                    try {
+                        std::size_t idx = static_cast<std::size_t>(std::stoul(idxStr));
+                        if (idx < sharedStrings.size()) {
+                            cellVal = sharedStrings[idx];
+                        }
+                    } catch (...) {}
+                } else if (type == "inlineStr") {
+                    cellVal = c.select_node(".//t").node().text().get();
+                } else if (type == "b") {
+                    std::string bVal = c.child("v").text().get();
+                    cellVal = (bVal == "1" ? "TRUE" : "FALSE");
+                } else {
+                    // Numeric value or formula value
+                    cellVal = c.child("v").text().get();
+                }
+
+                if (!cellVal.empty()) {
+                    if (!rowText.empty()) rowText.push_back('\t');
+                    rowText += cellVal;
+                }
+            }
+
+            if (!rowText.empty()) {
+                if (!outText.empty() && outText.back() != '\n') {
+                    outText.push_back('\n');
+                }
+                outText += rowText;
+            }
+        }
+    }
+
+    // Fallback: If no worksheet cells were found, output shared strings table directly
+    if (outText.empty() && !sharedStrings.empty()) {
+        for (const auto& s : sharedStrings) {
+            if (!s.empty()) {
+                if (!outText.empty() && outText.back() != '\n') {
+                    outText.push_back('\n');
+                }
+                outText += s;
+            }
+        }
+    }
+}
+
+} // anonymous namespace
 
 ExtractionResult OfficeExtractor::extract(const std::string& filePath,
                                          uint64_t maxBytes,
@@ -179,7 +455,7 @@ ExtractionResult OfficeExtractor::extract(const std::string& filePath,
     ExtractionResult result;
     result.sourcePath = filePath;
     result.extractorId = EXTRACTOR_ID;
-    result.extractorVersion = EXTRACTOR_VERSION;
+    result.extractorVersion = "1.1.0";
 
     std::error_code ec;
     auto fsPath = std::filesystem::u8path(filePath);
@@ -197,201 +473,104 @@ ExtractionResult OfficeExtractor::extract(const std::string& filePath,
     }
     result.originalFileSize = fileSize;
 
-    if (fileSize < 22) { // Minimal ZIP size is 22 bytes (empty EOCD)
+    if (fileSize < 22) {
         result.status = ExtractionStatus::Corrupted;
         result.errorDescription = "File too small to be a valid Office OOXML package";
         return result;
     }
 
-    std::ifstream file(fsPath, std::ios::binary);
-    if (!file.is_open()) {
-        result.status = ExtractionStatus::PermissionDenied;
-        result.errorDescription = "Failed to open file for read access";
-        return result;
-    }
-
-    // Read full package into memory buffer up to safety limit (default 50 MB)
-    std::vector<uint8_t> zipBuffer(static_cast<std::size_t>(fileSize));
-    file.read(reinterpret_cast<char*>(zipBuffer.data()), static_cast<std::streamsize>(fileSize));
-    if (file.gcount() != static_cast<std::streamsize>(fileSize)) {
-        result.status = ExtractionStatus::Corrupted;
-        result.errorDescription = "Truncated file read";
-        return result;
-    }
-
-    // Check for OLE encrypted package header (D0 CF 11 E0 A1 B1 1A E1)
-    if (zipBuffer.size() >= 8 &&
-        zipBuffer[0] == 0xD0 && zipBuffer[1] == 0xCF && zipBuffer[2] == 0x11 && zipBuffer[3] == 0xE0) {
-        result.status = ExtractionStatus::Encrypted;
-        result.errorDescription = "Office document is password-protected or encrypted (OLE container)";
-        return result;
-    }
-
-    // Check for standard ZIP signature PK\x03\x04
-    if (zipBuffer[0] != 'P' || zipBuffer[1] != 'K' || zipBuffer[2] != 0x03 || zipBuffer[3] != 0x04) {
-        result.status = ExtractionStatus::Corrupted;
-        result.errorDescription = "Invalid ZIP magic bytes; not an OOXML container";
-        return result;
-    }
-
-    // Locate End of Central Directory (EOCD: signature PK\x05\x06)
-    int64_t eocdOffset = -1;
-    const int64_t maxSearch = std::min<int64_t>(fileSize, 65535 + 22);
-    for (int64_t i = fileSize - 22; i >= static_cast<int64_t>(fileSize - maxSearch); --i) {
-        if (zipBuffer[i] == 'P' && zipBuffer[i + 1] == 'K' && zipBuffer[i + 2] == 0x05 && zipBuffer[i + 3] == 0x06) {
-            eocdOffset = i;
-            break;
+    // Check for OLE encrypted container (D0 CF 11 E0 A1 B1 1A E1)
+    {
+        std::ifstream f(fsPath, std::ios::binary);
+        if (!f.is_open()) {
+            result.status = ExtractionStatus::PermissionDenied;
+            result.errorDescription = "Failed to open file for read access";
+            return result;
+        }
+        uint8_t magic[8];
+        f.read(reinterpret_cast<char*>(magic), 8);
+        if (f.gcount() == 8 && magic[0] == 0xD0 && magic[1] == 0xCF && magic[2] == 0x11 && magic[3] == 0xE0) {
+            result.status = ExtractionStatus::Encrypted;
+            result.errorDescription = "Office document is password-protected or encrypted (OLE container)";
+            return result;
         }
     }
 
-    if (eocdOffset == -1) {
+    // Open ZIP archive using miniz reader (streams central directory without loading entire file)
+    mz_zip_archive zip;
+    std::memset(&zip, 0, sizeof(zip));
+    if (!mz_zip_reader_init_file(&zip, filePath.c_str(), 0)) {
         result.status = ExtractionStatus::Corrupted;
-        result.errorDescription = "ZIP End of Central Directory record not found";
+        result.errorDescription = "Failed to parse ZIP central directory: " + std::string(mz_zip_get_error_string(zip.m_last_error));
         return result;
     }
 
-    const uint8_t* eocd = zipBuffer.data() + eocdOffset;
-    uint16_t numEntries = readU16(eocd + 10);
-    uint32_t cdOffset = readU32(eocd + 16);
-
-    if (cdOffset >= fileSize) {
-        result.status = ExtractionStatus::Corrupted;
-        result.errorDescription = "Corrupted ZIP Central Directory offset";
+    // Entry count safety limit
+    mz_uint numFiles = mz_zip_reader_get_num_files(&zip);
+    if (numFiles > 10000) {
+        mz_zip_reader_end(&zip);
+        result.status = ExtractionStatus::FileTooLarge;
+        result.errorDescription = "ZIP package exceeds maximum entry count limit (10,000 entries)";
         return result;
     }
 
-    // Parse Central Directory entries
-    std::vector<ZipFileEntry> entries;
-    const uint8_t* cdPtr = zipBuffer.data() + cdOffset;
-    const uint8_t* cdEnd = zipBuffer.data() + eocdOffset;
-
-    for (uint16_t i = 0; i < numEntries && cdPtr + 46 <= cdEnd; ++i) {
-        if (cdPtr[0] != 'P' || cdPtr[1] != 'K' || cdPtr[2] != 0x01 || cdPtr[3] != 0x02) {
-            break;
+    // Check for encrypted entries
+    for (mz_uint i = 0; i < numFiles; ++i) {
+        if (mz_zip_reader_is_file_encrypted(&zip, i)) {
+            mz_zip_reader_end(&zip);
+            result.status = ExtractionStatus::Encrypted;
+            result.errorDescription = "ZIP package contains encrypted or password-protected entries";
+            return result;
         }
-        uint16_t method = readU16(cdPtr + 10);
-        uint32_t compSize = readU32(cdPtr + 20);
-        uint32_t uncompSize = readU32(cdPtr + 24);
-        uint16_t nameLen = readU16(cdPtr + 28);
-        uint16_t extraLen = readU16(cdPtr + 30);
-        uint16_t commentLen = readU16(cdPtr + 32);
-        uint32_t localHdr = readU32(cdPtr + 42);
-
-        if (cdPtr + 46 + nameLen <= cdEnd) {
-            std::string entryName(reinterpret_cast<const char*>(cdPtr + 46), nameLen);
-            entries.push_back({entryName, method, compSize, uncompSize, localHdr});
-        }
-        cdPtr += 46 + nameLen + extraLen + commentLen;
     }
 
-    // Determine target files based on extension
     std::string ext = fsPath.extension().u8string();
     if (!ext.empty() && ext[0] == '.') ext.erase(0, 1);
-    for (char& c : ext) c = static_cast<char>(std::tolower(c));
+    for (char& c : ext) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 
-    std::vector<std::string> targetPatterns;
+    std::string accumulatedText;
+    uint64_t cumulativeDecompressed = 0;
+
     if (ext == "docx") {
-        targetPatterns.push_back("word/document.xml");
-    } else if (ext == "pptx") {
-        // Collect slide XMLs
-        for (const auto& entry : entries) {
-            if (entry.filename.rfind("ppt/slides/slide", 0) == 0 &&
-                entry.filename.find(".xml") != std::string::npos) {
-                targetPatterns.push_back(entry.filename);
-            }
-        }
-        std::sort(targetPatterns.begin(), targetPatterns.end());
-    } else if (ext == "xlsx") {
-        targetPatterns.push_back("xl/sharedStrings.xml");
-        for (const auto& entry : entries) {
-            if (entry.filename.rfind("xl/worksheets/sheet", 0) == 0 &&
-                entry.filename.find(".xml") != std::string::npos) {
-                targetPatterns.push_back(entry.filename);
-            }
-        }
-    }
-
-    std::string combinedExtractedText;
-
-    for (const auto& targetName : targetPatterns) {
-        if (cancelToken && cancelToken->load(std::memory_order_relaxed)) {
-            result.status = ExtractionStatus::Cancelled;
-            return result;
-        }
-
-        // Find entry in Central Directory
-        const ZipFileEntry* targetEntry = nullptr;
-        for (const auto& e : entries) {
-            if (e.filename == targetName) {
-                targetEntry = &e;
-                break;
-            }
-        }
-
-        if (!targetEntry) continue;
-
-        // Anti-decompression bomb check: max 50 MB per XML file
-        if (targetEntry->uncompressedSize > 50 * 1024 * 1024) {
-            result.status = ExtractionStatus::FileTooLarge;
-            result.errorDescription = "Internal XML payload exceeds safe expansion limit (Zip bomb prevention)";
-            return result;
-        }
-
-        // Locate Local File Header
-        uint32_t lfhOff = targetEntry->localHeaderOffset;
-        if (lfhOff + 30 > fileSize) continue;
-
-        const uint8_t* lfh = zipBuffer.data() + lfhOff;
-        if (lfh[0] != 'P' || lfh[1] != 'K' || lfh[2] != 0x03 || lfh[3] != 0x04) {
-            continue;
-        }
-
-        uint16_t lfhNameLen = readU16(lfh + 26);
-        uint16_t lfhExtraLen = readU16(lfh + 28);
-        uint32_t dataOffset = lfhOff + 30 + lfhNameLen + lfhExtraLen;
-
-        if (dataOffset + targetEntry->compressedSize > fileSize) continue;
-
-        const uint8_t* compressedData = zipBuffer.data() + dataOffset;
-        std::vector<char> xmlData;
-
-        if (targetEntry->compressionMethod == 0) { // Stored (no compression)
-            xmlData.resize(targetEntry->uncompressedSize);
-            std::memcpy(xmlData.data(), compressedData, targetEntry->uncompressedSize);
-        } else if (targetEntry->compressionMethod == 8) { // Deflate
-            if (!decompressDeflate(compressedData, targetEntry->compressedSize, xmlData, targetEntry->uncompressedSize)) {
-                result.status = ExtractionStatus::Corrupted;
-                result.errorDescription = "Failed to decompress XML stream from Office container";
+        // Extract word/document.xml
+        int docIdx = findZipEntryIndex(zip, "word/document.xml");
+        if (docIdx >= 0) {
+            std::string docXml;
+            if (extractZipEntryToMemory(zip, static_cast<mz_uint>(docIdx), docXml, cumulativeDecompressed)) {
+                pugi::xml_document doc;
+                if (doc.load_buffer(docXml.data(), docXml.size())) {
+                    extractDocxNode(doc.child("w:document").child("w:body"), accumulatedText, maxBytes);
+                }
+            } else {
+                mz_zip_reader_end(&zip);
+                result.status = ExtractionStatus::FileTooLarge;
+                result.errorDescription = "Document XML exceeds safe expansion limit (Zip bomb protection)";
                 return result;
             }
-        } else {
-            result.status = ExtractionStatus::UnsupportedFormat;
-            result.errorDescription = "Unsupported ZIP compression method";
-            return result;
         }
-
-        std::string xmlStr(xmlData.data(), xmlData.size());
-        std::string plainText = stripXmlAndDecode(xmlStr);
-
-        if (!combinedExtractedText.empty() && !plainText.empty()) {
-            combinedExtractedText.push_back('\n');
-        }
-        combinedExtractedText += plainText;
-
-        if (combinedExtractedText.size() >= maxBytes) {
-            break;
-        }
+    } else if (ext == "pptx") {
+        extractPptxText(zip, accumulatedText, maxBytes, cumulativeDecompressed);
+    } else if (ext == "xlsx") {
+        extractXlsxText(zip, accumulatedText, maxBytes, cumulativeDecompressed);
     }
 
-    if (combinedExtractedText.empty() && targetPatterns.empty()) {
+    mz_zip_reader_end(&zip);
+
+    if (cancelToken && cancelToken->load(std::memory_order_relaxed)) {
+        result.status = ExtractionStatus::Cancelled;
+        result.errorDescription = "Extraction cancelled by user";
+        return result;
+    }
+
+    if (accumulatedText.empty()) {
         result.status = ExtractionStatus::MetadataOnly;
         result.errorDescription = "No extractable text XML streams found in Office container";
     } else {
-        bool truncated = (combinedExtractedText.size() > maxBytes);
+        bool truncated = (accumulatedText.size() > maxBytes);
         if (truncated) {
-            combinedExtractedText.resize(static_cast<std::size_t>(maxBytes));
+            accumulatedText.resize(static_cast<std::size_t>(maxBytes));
         }
-        result.extractedText = std::move(combinedExtractedText);
+        result.extractedText = std::move(accumulatedText);
         result.extractedByteCount = result.extractedText.size();
         result.isTruncated = truncated;
         result.status = truncated ? ExtractionStatus::Partial : ExtractionStatus::Success;
@@ -399,7 +578,6 @@ ExtractionResult OfficeExtractor::extract(const std::string& filePath,
 
     auto tEnd = std::chrono::steady_clock::now();
     result.durationMs = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-
     return result;
 }
 

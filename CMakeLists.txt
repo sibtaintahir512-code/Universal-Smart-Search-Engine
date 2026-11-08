@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(UniversalSmartSearchEngine VERSION 1.0.0 LANGUAGES CXX)
+project(UniversalSmartSearchEngine VERSION 1.0.0 LANGUAGES CXX C)
 
 # Enforce standard C++17 across all targets
 set(CMAKE_CXX_STANDARD 17)
@@ -59,14 +59,19 @@ add_library(SearchEngineCore STATIC
     src/extraction/SourceCodeExtractor.cpp
     src/extraction/OfficeExtractor.cpp
     src/extraction/PDFExtractor.cpp
+    src/extraction/PDFDocumentParser.cpp
     src/extraction/ImageMetadataExtractor.cpp
     src/extraction/MediaMetadataExtractor.cpp
     src/extraction/ArchiveMetadataExtractor.cpp
     src/extraction/ExtractionManager.cpp
+    third_party/pugixml/pugixml.cpp
+    third_party/miniz/miniz.c
 )
 
 target_include_directories(SearchEngineCore PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/pugixml
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/miniz
 )
 
 target_link_libraries(SearchEngineCore PUBLIC

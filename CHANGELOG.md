@@ -6,6 +6,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.1] - Phase 4.1 Complete (November 2026)
+
+### Added
+- **Hardened PDF Extraction Subsystem (`PDFDocumentParser`):**
+  - Chunked 64 KB stream reader eliminating monolithic file memory allocations.
+  - Linear object scanning fallback when XRef table is corrupted or missing.
+  - Font `/ToUnicode` CMap parser mapping custom glyph identifiers to valid UTF-8.
+  - Multi-stream and kerning array operator handling (`TJ`, `Tj`, `'`, `"`, `Td`, `T*`).
+  - Strict decompression bomb limits (10 MB per stream, 50 MB total ceiling, 100:1 ratio limit).
+- **Hardened Office Extraction Subsystem (`OfficeExtractor`):**
+  - Integrated `miniz` 3.0.2 for ZIP64 support, in-memory entry streaming, and 10,000 entry ceiling.
+  - Integrated `pugixml` 1.14 DOM parsing with external entity resolution disabled.
+  - Corrected PPTX presentation slide ordering by parsing `ppt/presentation.xml` and relationships.
+  - Implemented XLSX cell value resolution for shared strings (`xl/sharedStrings.xml`) and inline strings (`<is><t>`).
+  - Multi-entry ZIP bomb defense (50 MB per entry, 100 MB total package ceiling, 100:1 ratio).
+- **Text & Encoding Hardening (`TextExtractor`):**
+  - Strict RFC 3629 UTF-8 validation rejecting overlong sequences (`0xC0, 0x80`) and surrogate halves.
+  - UTF-16 surrogate pair assembly for characters outside the Basic Multilingual Plane ($U+10000 \dots U+10FFFF$).
+  - Safe RTF control word stripping and text extraction.
+- **Cache Canonicalization Hardening (`ExtractionCache`):**
+  - Consistent canonical path indexing in `put()` and `get()` resolving relative path cache misses.
+- **Testing & Quality Assurance:**
+  - Added `Test_Phase41_Hardening.cpp` with 53 adversarial and hardening assertions.
+  - Total test suite now checks 1,627 assertions with 100% pass rate under native build and UndefinedBehaviorSanitizer.
+- **Documentation:**
+  - `docs/PHASE_4_1_INITIAL_AUDIT.md`: Complete defect and security risk audit.
+  - `docs/PHASE_4_1_HARDENING_REPORT.md`: Comprehensive engineering hardening report.
+
+---
+
 ## [0.4.0] - Phase 4 Complete (November 2026)
 
 ### Added

@@ -122,17 +122,17 @@ The development lifecycle for Release 1 is organized into 11 strictly sequenced 
 
 ---
 
-### Phase 4: Content Extraction Engine
-- **Status:** Complete (Verified: 1,574 / 1,574 Tests Passed).
-- **Objectives:** Extract decoded plain text from supported document, source code, office, pdf, and multimedia files.
+### Phase 4 & Phase 4.1: Content Extraction Engine & Security Hardening
+- **Status:** Complete (Verified: 1,627 / 1,627 Tests Passed).
+- **Objectives:** Extract decoded plain text from supported document, source code, office, pdf, and multimedia files with strict memory bounds and security safeguards.
 - **Tasks:**
   1. Implement `IContentExtractor` plugin interface and `ExtractionResult`.
-  2. Implement `TextExtractor` supporting UTF-8, ASCII, UTF-8 BOM, and UTF-16 LE/BE.
+  2. Implement `TextExtractor` supporting RFC 3629 UTF-8, UTF-8 BOM, UTF-16 surrogate pairs, and RTF.
   3. Implement `SourceCodeExtractor` for 20+ programming languages preserving structure.
-  4. Implement `OfficeExtractor` for DOCX, PPTX, and XLSX with zlib inflation and anti-zip-bomb protection.
-  5. Implement `PDFExtractor` for stream parsing, FlateDecode, and encryption detection.
+  4. Implement `OfficeExtractor` for DOCX, PPTX, and XLSX with `miniz` ZIP64 streaming, `pugixml` DOM parsing, correct PPTX slide ordering, and XLSX shared string cell resolution.
+  5. Implement `PDFExtractor` & `PDFDocumentParser` with chunked stream reading, FlateDecode, /ToUnicode CMap, and anti-bomb limits.
   6. Implement `ImageMetadataExtractor`, `MediaMetadataExtractor`, and `ArchiveMetadataExtractor`.
-  7. Implement `ExtractionCache` with composite identity hashing.
+  7. Implement `ExtractionCache` with canonical path composite identity hashing.
   8. Implement `ExtractionManager` with budget clamping (5MB–100MB), 1GB cutoff, and cooperative cancellation.
 - **Dependencies:** Phase 3.
 - **Expected Deliverables:** Content extraction subsystem in `extraction/`.

@@ -28,14 +28,18 @@ bool ExtractionCache::get(const std::string& canonicalPath,
 }
 
 void ExtractionCache::put(const ExtractionResult& result, uint64_t modTime) {
-    if (result.sourcePath.empty()) return;
+    put(result.sourcePath, result, modTime);
+}
+
+void ExtractionCache::put(const std::string& keyPath, const ExtractionResult& result, uint64_t modTime) {
+    if (keyPath.empty()) return;
 
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     CacheEntry entry;
     entry.result = result;
     entry.cachedModTime = modTime;
 
-    m_entries.insert(result.sourcePath, std::move(entry));
+    m_entries.insert(keyPath, std::move(entry));
 }
 
 bool ExtractionCache::invalidate(const std::string& canonicalPath) {

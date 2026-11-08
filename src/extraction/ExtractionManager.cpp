@@ -139,9 +139,9 @@ ExtractionResult ExtractionManager::extract(const std::string& filePath,
     result = extractor->extract(filePath, m_maxExtractionBytes, cancelToken);
     result.docId = docId;
 
-    // Cache successful or partial results
+    // Cache successful or partial results using canonical path
     if (result.isSuccess() || result.status == ExtractionStatus::MetadataOnly) {
-        m_cache.put(result, modTime);
+        m_cache.put(canonPath, result, modTime);
     }
 
     return result;

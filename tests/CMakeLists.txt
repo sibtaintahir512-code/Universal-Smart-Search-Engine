@@ -26,6 +26,7 @@ add_executable(UnitTestsRunner
     unit/Test_ArchiveMetadataExtractor.cpp
     unit/Test_ExtractionCache.cpp
     unit/Test_ExtractionManager.cpp
+    unit/Test_Phase41_Hardening.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE

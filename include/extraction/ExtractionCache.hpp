@@ -51,6 +51,7 @@ public:
      * @brief Inserts or updates an extraction result in the cache.
      */
     void put(const ExtractionResult& result, uint64_t modTime);
+    void put(const std::string& keyPath, const ExtractionResult& result, uint64_t modTime);
 
     /**
      * @brief Manually invalidates cached entry for path.

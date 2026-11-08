@@ -34,6 +34,7 @@ namespace sse::test {
     void runArchiveMetadataExtractorTests();
     void runExtractionCacheTests();
     void runExtractionManagerTests();
+    void runPhase41HardeningTests();
 }
 
 int main() {
@@ -84,6 +85,7 @@ int main() {
     sse::test::runArchiveMetadataExtractorTests();
     sse::test::runExtractionCacheTests();
     sse::test::runExtractionManagerTests();
+    sse::test::runPhase41HardeningTests();
 
     // 5. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
