@@ -1,0 +1,39 @@
+# Build directories
+build/
+bin/
+lib/
+out/
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!cmake/*.cmake
+compile_commands.json
+
+# MSVC / Visual Studio artifacts
+.vs/
+*.sln
+*.vcxproj*
+*.user
+*.suo
+*.pdb
+*.idb
+*.ilk
+
+# Qt artifacts
+*.moc
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Local runtime data & caches
+data/search.idx
+data/history.dat
+data/logs/*
+!data/logs/.gitkeep
+
+# macOS metadata
+.DS_Store
