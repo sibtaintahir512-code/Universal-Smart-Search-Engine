@@ -123,13 +123,17 @@ The development lifecycle for Release 1 is organized into 11 strictly sequenced 
 ---
 
 ### Phase 4: Content Extraction Engine
-- **Objectives:** Extract decoded plain text from supported document and source code files.
+- **Status:** Complete (Verified: 1,574 / 1,574 Tests Passed).
+- **Objectives:** Extract decoded plain text from supported document, source code, office, pdf, and multimedia files.
 - **Tasks:**
-  1. Implement `IContentExtractor` plugin interface.
-  2. Implement `TextExtractor` supporting UTF-8, ASCII, and UTF-16 with BOM.
-  3. Implement `CodeExtractor` with identifier tokenization.
-  4. Implement 50 MB streaming safety cap and status tracking (`Truncated`, `Failed`, `MetadataOnly`).
-  5. Define stub hooks for PDF and Office formats.
+  1. Implement `IContentExtractor` plugin interface and `ExtractionResult`.
+  2. Implement `TextExtractor` supporting UTF-8, ASCII, UTF-8 BOM, and UTF-16 LE/BE.
+  3. Implement `SourceCodeExtractor` for 20+ programming languages preserving structure.
+  4. Implement `OfficeExtractor` for DOCX, PPTX, and XLSX with zlib inflation and anti-zip-bomb protection.
+  5. Implement `PDFExtractor` for stream parsing, FlateDecode, and encryption detection.
+  6. Implement `ImageMetadataExtractor`, `MediaMetadataExtractor`, and `ArchiveMetadataExtractor`.
+  7. Implement `ExtractionCache` with composite identity hashing.
+  8. Implement `ExtractionManager` with budget clamping (5MB–100MB), 1GB cutoff, and cooperative cancellation.
 - **Dependencies:** Phase 3.
 - **Expected Deliverables:** Content extraction subsystem in `extraction/`.
 - **Testing Requirements:** Ingestion tests on corrupted text files, binary files disguised as `.txt`, and 100 MB large files.

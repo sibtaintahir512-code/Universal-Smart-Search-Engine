@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - Phase 4 Complete (November 2026)
+
+### Added
+- **Content & Metadata Extraction Subsystem:**
+  - `include/extraction/ExtractionStatus.hpp`: Granular extraction status codes (`Success`, `Partial`, `MetadataOnly`, `UnsupportedFormat`, `Corrupted`, `Encrypted`, `PermissionDenied`, `FileTooLarge`, `Cancelled`, `Failed`).
+  - `include/extraction/ExtractionResult.hpp` & `src/extraction/ExtractionResult.cpp`: Unified extraction result value type tracking docId, path, text, byte counts, duration, truncation flag, metadata summary, and error message.
+  - `include/extraction/IContentExtractor.hpp`: Polymorphic interface for all content and metadata extractors.
+  - `include/extraction/TextExtractor.hpp` & `src/extraction/TextExtractor.cpp`: Streaming text parser with UTF-8 BOM stripping, UTF-16 LE/BE conversion, and 64KB chunk processing.
+  - `include/extraction/SourceCodeExtractor.hpp` & `src/extraction/SourceCodeExtractor.cpp`: Source code parser for 20+ languages preserving indentation and structure.
+  - `include/extraction/OfficeExtractor.hpp` & `src/extraction/OfficeExtractor.cpp`: Direct ZIP container traversal and zlib raw deflate decompression for DOCX (`document.xml`), PPTX (`slide*.xml`), and XLSX (`sharedStrings.xml`) with anti-zip-bomb limits.
+  - `include/extraction/PDFExtractor.hpp` & `src/extraction/PDFExtractor.cpp`: Stream text extraction (`BT ... ET`, `Tj`, `TJ`), FlateDecode zlib decompression, password encryption detection, and page count parsing.
+  - `include/extraction/ImageMetadataExtractor.hpp` & `src/extraction/ImageMetadataExtractor.cpp`: 32KB binary header inspection for PNG, JPEG, GIF, BMP, WEBP, and SVG with external entity resolution prevention.
+  - `include/extraction/MediaMetadataExtractor.hpp` & `src/extraction/MediaMetadataExtractor.cpp`: 64KB container header parsing for WAV, MP4, MOV, FLAC, and MP3 (ID3v2 tags and MPEG sync).
+  - `include/extraction/ArchiveMetadataExtractor.hpp` & `src/extraction/ArchiveMetadataExtractor.cpp`: Non-extracting archive container inspector for ZIP, 7Z, RAR, TAR, and GZ.
+  - `include/extraction/ExtractionCache.hpp` & `src/extraction/ExtractionCache.cpp`: Thread-safe caching layer backed by Phase 2 `CustomHashTable` keyed on composite file identity.
+  - `include/extraction/ExtractionManager.hpp` & `src/extraction/ExtractionManager.cpp`: Central coordinator managing extractor registration, budget clamping (5MB–100MB), 1GB cutoff, cache lookups, and cooperative cancellation.
+- **Testing & Quality Assurance:**
+  - 9 dedicated Phase 4 test suites verifying all extractors, edge cases, corrupted/encrypted inputs, and caching behavior.
+  - 1,574 total assertions passed (133 new in Phase 4) with 0 failures under native build and UndefinedBehaviorSanitizer (`-fsanitize=undefined`).
+- **Documentation:**
+  - `docs/CONTENT_EXTRACTION_IMPLEMENTATION_REPORT.md`: Detailed engineering report and format support matrix for Phase 4.
+
+---
+
 ## [0.3.0] - Phase 3 Complete (November 2026)
 
 ### Added

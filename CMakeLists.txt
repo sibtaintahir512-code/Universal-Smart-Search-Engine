@@ -25,6 +25,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets Core Gui)
+find_package(ZLIB REQUIRED)
 
 # ==============================================================================
 # Target 1: DsaLib (Pure custom algorithmic data structures - Zero STL)
@@ -52,6 +53,16 @@ add_library(SearchEngineCore STATIC
     src/indexing/ScanStatistics.cpp
     src/indexing/FileScanner.cpp
     src/indexing/ScanWorker.cpp
+    src/extraction/ExtractionResult.cpp
+    src/extraction/ExtractionCache.cpp
+    src/extraction/TextExtractor.cpp
+    src/extraction/SourceCodeExtractor.cpp
+    src/extraction/OfficeExtractor.cpp
+    src/extraction/PDFExtractor.cpp
+    src/extraction/ImageMetadataExtractor.cpp
+    src/extraction/MediaMetadataExtractor.cpp
+    src/extraction/ArchiveMetadataExtractor.cpp
+    src/extraction/ExtractionManager.cpp
 )
 
 target_include_directories(SearchEngineCore PUBLIC
@@ -60,6 +71,7 @@ target_include_directories(SearchEngineCore PUBLIC
 
 target_link_libraries(SearchEngineCore PUBLIC
     DsaLib
+    ZLIB::ZLIB
 )
 
 set_project_warnings(SearchEngineCore)

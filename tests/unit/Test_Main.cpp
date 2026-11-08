@@ -23,6 +23,17 @@ namespace sse::test {
     void runScanStatisticsTests();
     void runFileScannerTests();
     void runScanWorkerTests();
+
+    // Phase 4 Content & Metadata Extraction Test Suites
+    void runTextExtractorTests();
+    void runSourceCodeExtractorTests();
+    void runOfficeExtractorTests();
+    void runPDFExtractorTests();
+    void runImageMetadataExtractorTests();
+    void runMediaMetadataExtractorTests();
+    void runArchiveMetadataExtractorTests();
+    void runExtractionCacheTests();
+    void runExtractionManagerTests();
 }
 
 int main() {
@@ -62,7 +73,19 @@ int main() {
     sse::test::runFileScannerTests();
     sse::test::runScanWorkerTests();
 
-    // 4. Print Final Summary
+    // 4. Run Phase 4 Content & Metadata Extraction Test Suites
+    std::cout << "\n--- Executing Phase 4 Content & Metadata Extraction Test Suites ---" << std::endl;
+    sse::test::runTextExtractorTests();
+    sse::test::runSourceCodeExtractorTests();
+    sse::test::runOfficeExtractorTests();
+    sse::test::runPDFExtractorTests();
+    sse::test::runImageMetadataExtractorTests();
+    sse::test::runMediaMetadataExtractorTests();
+    sse::test::runArchiveMetadataExtractorTests();
+    sse::test::runExtractionCacheTests();
+    sse::test::runExtractionManagerTests();
+
+    // 5. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

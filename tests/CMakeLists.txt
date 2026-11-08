@@ -17,6 +17,15 @@ add_executable(UnitTestsRunner
     unit/Test_ScanStatistics.cpp
     unit/Test_FileScanner.cpp
     unit/Test_ScanWorker.cpp
+    unit/Test_TextExtractor.cpp
+    unit/Test_SourceCodeExtractor.cpp
+    unit/Test_OfficeExtractor.cpp
+    unit/Test_PDFExtractor.cpp
+    unit/Test_ImageMetadataExtractor.cpp
+    unit/Test_MediaMetadataExtractor.cpp
+    unit/Test_ArchiveMetadataExtractor.cpp
+    unit/Test_ExtractionCache.cpp
+    unit/Test_ExtractionManager.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE
