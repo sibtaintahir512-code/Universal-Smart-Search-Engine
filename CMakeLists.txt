@@ -46,6 +46,12 @@ enable_sanitizers(DsaLib)
 # ==============================================================================
 add_library(SearchEngineCore STATIC
     src/core/CommonTypes.cpp
+    src/indexing/FileMetadataManager.cpp
+    src/indexing/DocumentCatalog.cpp
+    src/indexing/FileChangeDetector.cpp
+    src/indexing/ScanStatistics.cpp
+    src/indexing/FileScanner.cpp
+    src/indexing/ScanWorker.cpp
 )
 
 target_include_directories(SearchEngineCore PUBLIC

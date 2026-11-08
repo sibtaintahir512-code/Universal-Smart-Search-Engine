@@ -22,7 +22,33 @@ enum class FileCategory : uint8_t {
     Videos,
     Audio,
     Archives,
+    Executables,
     Other
+};
+
+/**
+ * @brief Metadata bitmask flags for document lifecycle and capabilities.
+ */
+enum MetadataFlags : uint8_t {
+    META_FLAG_ACTIVE                   = 0x01, // Bit 0: is_active (1 = active, 0 = tombstone)
+    META_FLAG_HAS_THUMBNAIL            = 0x02, // Bit 1: has thumbnail preview
+    META_FLAG_IS_SYMLINK               = 0x04, // Bit 2: is symbolic link or junction
+    META_FLAG_IS_ACCESSIBLE            = 0x08, // Bit 3: is accessible by filesystem
+    META_FLAG_COMPLETE                 = 0x10, // Bit 4: metadata collection completed successfully
+    META_FLAG_SUPPORTS_CONTENT_EXTRACT = 0x20, // Bit 5: extension eligible for content extraction in Phase 4
+    META_FLAG_MODIFIED                 = 0x40  // Bit 6: file modified compared to prior scan
+};
+
+/**
+ * @brief Change detection status for incremental scan comparison.
+ */
+enum class FileChangeStatus : uint8_t {
+    New = 0,
+    Modified,
+    Unchanged,
+    Missing,
+    Inaccessible,
+    Error
 };
 
 /**

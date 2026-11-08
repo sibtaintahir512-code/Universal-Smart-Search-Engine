@@ -5,6 +5,7 @@
 #include "core/CommonTypes.hpp"
 
 namespace sse::test {
+    // Phase 2 DSA Test Suites
     void runDynamicArrayTests();
     void runSinglyLinkedListTests();
     void runHashTableTests();
@@ -14,11 +15,19 @@ namespace sse::test {
     void runMinHeapTests();
     void runStackTests();
     void runQueueTests();
+
+    // Phase 3 Scanner & Catalog Test Suites
+    void runFileMetadataManagerTests();
+    void runDocumentCatalogTests();
+    void runFileChangeDetectorTests();
+    void runScanStatisticsTests();
+    void runFileScannerTests();
+    void runScanWorkerTests();
 }
 
 int main() {
     std::cout << "======================================================================" << std::endl;
-    std::cout << " UNIVERSAL SMART SEARCH ENGINE — PHASE 2 DSA TEST SUITE" << std::endl;
+    std::cout << " UNIVERSAL SMART SEARCH ENGINE — INTEGRATED TEST SUITE" << std::endl;
     std::cout << "======================================================================" << std::endl;
 
     // 1. Verify CommonTypes & 24-byte PostingNode layout
@@ -32,8 +41,8 @@ int main() {
     TEST_ASSERT(meta.docId == sse::INVALID_DOC_ID);
     TEST_ASSERT((meta.flags & 0x01) == 0x01);
 
-    // 2. Run all custom data structure test suites
-    std::cout << "\n--- Executing Custom Data Structure Test Suites ---" << std::endl;
+    // 2. Run Phase 2 custom data structure test suites
+    std::cout << "\n--- Executing Phase 2 Custom DSA Test Suites ---" << std::endl;
     sse::test::runDynamicArrayTests();
     sse::test::runSinglyLinkedListTests();
     sse::test::runHashTableTests();
@@ -44,7 +53,16 @@ int main() {
     sse::test::runStackTests();
     sse::test::runQueueTests();
 
-    // 3. Print Final Summary
+    // 3. Run Phase 3 File Discovery & Cataloging Test Suites
+    std::cout << "\n--- Executing Phase 3 File Discovery & Catalog Test Suites ---" << std::endl;
+    sse::test::runFileMetadataManagerTests();
+    sse::test::runDocumentCatalogTests();
+    sse::test::runFileChangeDetectorTests();
+    sse::test::runScanStatisticsTests();
+    sse::test::runFileScannerTests();
+    sse::test::runScanWorkerTests();
+
+    // 4. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

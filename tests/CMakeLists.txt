@@ -11,6 +11,12 @@ add_executable(UnitTestsRunner
     unit/Test_MinHeap.cpp
     unit/Test_Stack.cpp
     unit/Test_Queue.cpp
+    unit/Test_FileMetadataManager.cpp
+    unit/Test_DocumentCatalog.cpp
+    unit/Test_FileChangeDetector.cpp
+    unit/Test_ScanStatistics.cpp
+    unit/Test_FileScanner.cpp
+    unit/Test_ScanWorker.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE
