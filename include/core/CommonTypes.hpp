@@ -81,4 +81,45 @@ struct FileMetadata {
     uint8_t          flags{0x01}; // Bit 0: is_active (default 1)
 };
 
+/**
+ * @brief Candidate node for Top-K ranking heaps (both Max-Heap Strategy A and Bounded Min-Heap Strategy B).
+ */
+struct HeapNode {
+    DocID    docId{INVALID_DOC_ID};
+    float    score{0.0f};
+    uint64_t modificationTimestamp{0};
+
+    // Node A > Node B tie-breaking:
+    // (A.score > B.score) ||
+    // (A.score == B.score && A.modificationTimestamp > B.modificationTimestamp) ||
+    // (A.score == B.score && A.modificationTimestamp == B.modificationTimestamp && A.docId < B.docId)
+    bool operator>(const HeapNode& other) const noexcept {
+        if (score != other.score) {
+            return score > other.score;
+        }
+        if (modificationTimestamp != other.modificationTimestamp) {
+            return modificationTimestamp > other.modificationTimestamp;
+        }
+        return docId < other.docId;
+    }
+
+    bool operator<(const HeapNode& other) const noexcept {
+        if (score != other.score) {
+            return score < other.score;
+        }
+        if (modificationTimestamp != other.modificationTimestamp) {
+            return modificationTimestamp < other.modificationTimestamp;
+        }
+        return docId > other.docId;
+    }
+
+    bool operator==(const HeapNode& other) const noexcept {
+        return docId == other.docId && score == other.score && modificationTimestamp == other.modificationTimestamp;
+    }
+
+    bool operator!=(const HeapNode& other) const noexcept {
+        return !(*this == other);
+    }
+};
+
 } // namespace sse

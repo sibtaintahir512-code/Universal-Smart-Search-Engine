@@ -30,7 +30,8 @@ find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets Core Gui)
 # Target 1: DsaLib (Pure custom algorithmic data structures - Zero STL)
 # ==============================================================================
 add_library(DsaLib STATIC
-    src/dsa/DsaLibPlaceholder.cpp
+    src/dsa/CustomPostingList.cpp
+    src/dsa/CustomTrie.cpp
 )
 
 target_include_directories(DsaLib PUBLIC

@@ -2,10 +2,20 @@
 
 add_executable(UnitTestsRunner
     unit/Test_Main.cpp
+    unit/Test_DynamicArray.cpp
+    unit/Test_SinglyLinkedList.cpp
+    unit/Test_HashTable.cpp
+    unit/Test_PostingList.cpp
+    unit/Test_Trie.cpp
+    unit/Test_MaxHeap.cpp
+    unit/Test_MinHeap.cpp
+    unit/Test_Stack.cpp
+    unit/Test_Queue.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(UnitTestsRunner PRIVATE
