@@ -77,15 +77,16 @@ double TFIDFScorer::scoreDocument(DocID docId,
 
         double termNameScore = 0.0;
         double termBodyScore = 0.0;
+        double sublinearBodyTf = (bodyTf > 0) ? (1.0 + std::log(static_cast<double>(bodyTf))) : 0.0;
 
         if (qTerm.field == search::FieldQualifier::Filename) {
             termNameScore = config.filenameWeight * static_cast<double>(nameTf) * idf * qTerm.weight;
         } else if (qTerm.field == search::FieldQualifier::Body) {
-            termBodyScore = config.bodyWeight * static_cast<double>(bodyTf) * idf * qTerm.weight;
+            termBodyScore = config.bodyWeight * sublinearBodyTf * idf * qTerm.weight;
         } else {
             // Unspecified: score both fields
             termNameScore = config.filenameWeight * static_cast<double>(nameTf) * idf * qTerm.weight;
-            termBodyScore = config.bodyWeight * static_cast<double>(bodyTf) * idf * qTerm.weight;
+            termBodyScore = config.bodyWeight * sublinearBodyTf * idf * qTerm.weight;
         }
 
         double termTotal = termNameScore + termBodyScore;

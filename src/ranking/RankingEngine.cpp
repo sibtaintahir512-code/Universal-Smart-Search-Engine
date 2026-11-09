@@ -53,7 +53,8 @@ void RankingEngine::collectPositiveTerms(const search::QueryNode* node,
         case search::QueryNodeType::Not: {
             const auto* notNode = static_cast<const search::NotNode*>(node);
             // Invert the negation context: terms inside NOT are excluded from positive scoring
-            collectPositiveTerms(notNode->operand.get(), outTerms, true);
+            // Double negation (NOT NOT term) restores positive scoring context
+            collectPositiveTerms(notNode->operand.get(), outTerms, !insideNot);
             break;
         }
     }

@@ -77,6 +77,17 @@ void runBooleanAwareRankingTests() {
         TEST_ASSERT_NEAR(resp.results[0].relevanceScore, 0.0, 1e-9);
         TEST_ASSERT_NEAR(resp.results[1].relevanceScore, 0.0, 1e-9);
     }
+
+    // 4. Double Negation: "NOT (NOT apple)"
+    // Double negation toggles negation context back to positive scoring:
+    // Positive scoring term "apple" is extracted and yields non-zero scores!
+    {
+        SearchResponse resp = service.search("NOT (NOT apple)");
+        TEST_ASSERT(resp.isValid);
+        TEST_ASSERT_EQ(resp.totalMatches, 3);
+        TEST_ASSERT_EQ(resp.results.size(), 3);
+        TEST_ASSERT(resp.results[0].relevanceScore > 0.0);
+    }
 }
 
 } // namespace sse::test

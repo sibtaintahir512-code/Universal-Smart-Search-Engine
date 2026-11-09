@@ -37,7 +37,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InvertedIndex` embeds `DocumentLengthStatistics` to record token lengths during indexing and update totals on document removal.
 - `SearchResultItem` extended with `relevanceScore`, `rankPosition`, and `explanation`.
 - `SearchResponse` extended with `rankingMode`.
-- Total test assertion count increased to 14,098 passing assertions (100% pass rate, 0 failures).
+- Total test assertion count increased to 14,104 passing assertions (100% pass rate, 0 failures).
+
+### Fixed
+- `TFIDFScorer`: Corrected linear body term frequency to proper sublinear transform ($1.0 + \ln(\text{bodyTf})$).
+- `RankingEngine`: Corrected double negation query traversal (`NOT NOT term`) to properly score positive query terms.
+- `Test_Phase7_Benchmarks`: Increased benchmark timeout thresholds under sanitizer instrumentation.
 
 ---
 

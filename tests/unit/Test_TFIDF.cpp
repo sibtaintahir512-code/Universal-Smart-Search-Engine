@@ -58,13 +58,16 @@ void runTFIDFTests() {
         // Doc 1: "database" in filename (tf=1) and body (tf=3)
         // Doc 2: "database" in body only (tf=1)
         // Doc 3: "systems" in body only (tf=2)
+        // Doc 4: "database" in body only (tf=4)
         stats.recordDocumentLength(1, 1, 10);
         stats.recordDocumentLength(2, 1, 10);
         stats.recordDocumentLength(3, 1, 10);
+        stats.recordDocumentLength(4, 1, 10);
 
         index.addTerm("database", 1, 1, 3, FIELD_FILENAME | FIELD_CONTENT);
         index.addTerm("database", 2, 0, 1, FIELD_CONTENT);
         index.addTerm("systems", 3, 0, 2, FIELD_CONTENT);
+        index.addTerm("database", 4, 0, 4, FIELD_CONTENT);
 
         RankingConfig config;
         config.mode = RankingMode::TFIDF;
@@ -76,10 +79,10 @@ void runTFIDFTests() {
         terms.push_back(ScoringTerm("database"));
 
         ScoreExplanation expl1;
-        double score1 = TFIDFScorer::scoreDocument(1, terms, index, 3, config, &expl1);
+        double score1 = TFIDFScorer::scoreDocument(1, terms, index, 4, config, &expl1);
 
         ScoreExplanation expl2;
-        double score2 = TFIDFScorer::scoreDocument(2, terms, index, 3, config, &expl2);
+        double score2 = TFIDFScorer::scoreDocument(2, terms, index, 4, config, &expl2);
 
         // Doc 1 has filename match and higher body TF => score1 > score2
         TEST_ASSERT(score1 > score2);
@@ -100,8 +103,18 @@ void runTFIDFTests() {
 
         // Doc 3 has no matches for "database" => score is 0
         ScoreExplanation expl3;
-        double score3 = TFIDFScorer::scoreDocument(3, terms, index, 3, config, &expl3);
+        double score3 = TFIDFScorer::scoreDocument(3, terms, index, 4, config, &expl3);
         TEST_ASSERT_NEAR(score3, 0.0, 1e-9);
+
+        // Sublinear TF verification on scored documents:
+        // Doc 2: bodyTf = 1 => 1.0 + ln(1) = 1.0
+        // Doc 4: bodyTf = 4 => 1.0 + ln(4) = 2.386294
+        // Ratio must be (1 + ln(4)) / 1.0 = ~2.3863, distinctly less than linear 4.0
+        ScoreExplanation expl4;
+        double score4 = TFIDFScorer::scoreDocument(4, terms, index, 4, config, &expl4);
+        double expectedRatio = (1.0 + std::log(4.0)) / (1.0 + std::log(1.0));
+        TEST_ASSERT_NEAR(score4 / score2, expectedRatio, 1e-5);
+        TEST_ASSERT(score4 < score2 * 4.0); // Sublinear dampening proven
     }
 }
 
