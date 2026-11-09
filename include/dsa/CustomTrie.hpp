@@ -68,6 +68,13 @@ public:
     bool insert(const std::string& word, uint32_t freq = 1);
 
     /**
+     * @brief Removes a word from the Trie if present.
+     * Decrements wordCount and clears terminal flag.
+     * @return true if word was terminal and removed; false if absent or invalid.
+     */
+    bool remove(const std::string& word);
+
+    /**
      * @brief Checks if exact word is present in the Trie.
      */
     bool contains(const std::string& word) const noexcept;

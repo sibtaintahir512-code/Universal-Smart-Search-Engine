@@ -5,7 +5,7 @@
 [![Compiler](https://img.shields.io/badge/Compiler-MSVC%202022%20x64-brightgreen.svg)](https://visualstudio.microsoft.com/)
 [![Framework](https://img.shields.io/badge/UI-Qt%206%20Widgets-green.svg)](https://www.qt.io/)
 [![Build](https://img.shields.io/badge/Build-CMake%203.20%2B-orange.svg)](https://cmake.org/)
-[![Status](https://img.shields.io/badge/Phase-Phase%204.2%20Complete-success.svg)](DEVELOPMENT_STATUS.md)
+[![Status](https://img.shields.io/badge/Phase-Phase%205%20Complete-success.svg)](DEVELOPMENT_STATUS.md)
 
 A high-performance native desktop file search engine built from the ground up in modern **C++17** and **Qt 6 Widgets**. 
 
@@ -98,4 +98,4 @@ Comprehensive engineering documents are located in [`docs/`](docs/):
 
 ## Current Status
 
-Phase 4.2 (PDF Parser Replacement & Extraction Compliance) is complete with 1,664/1,664 assertions passing. The system is awaiting formal review before Phase 5 (Inverted Index & Tokenizer Pipeline). See [**`DEVELOPMENT_STATUS.md`**](DEVELOPMENT_STATUS.md) and [**`docs/PHASE_4_2_COMPLIANCE_REPORT.md`**](docs/PHASE_4_2_COMPLIANCE_REPORT.md) for details.
+Phase 5 (Inverted Index & Tokenizer Pipeline) is complete with 13,040/13,040 assertions passing and ingestion throughput $>20,000$ docs/sec. The system is awaiting formal review before Phase 6 (Search & Boolean Query Engine). See [**`DEVELOPMENT_STATUS.md`**](DEVELOPMENT_STATUS.md) and [**`docs/PHASE_5_INVERTED_INDEX_REPORT.md`**](docs/PHASE_5_INVERTED_INDEX_REPORT.md) for details.

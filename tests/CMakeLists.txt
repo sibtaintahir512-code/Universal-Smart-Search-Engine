@@ -28,6 +28,12 @@ add_executable(UnitTestsRunner
     unit/Test_ExtractionManager.cpp
     unit/Test_Phase41_Hardening.cpp
     unit/Test_Phase42_Compliance.cpp
+    unit/Test_TextNormalizer.cpp
+    unit/Test_Tokenizer.cpp
+    unit/Test_InvertedIndex.cpp
+    unit/Test_IndexingPipeline.cpp
+    unit/Test_IndexIntegrity.cpp
+    unit/Test_Phase5_Benchmarks.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE

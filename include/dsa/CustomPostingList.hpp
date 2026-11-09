@@ -39,6 +39,24 @@ public:
     void appendNode(DocID docId, uint16_t nameFreq, uint16_t bodyFreq, uint8_t fieldMask);
 
     /**
+     * @brief Removes a document's posting node from the list if present.
+     * Decrements document frequency and maintains sorted chain.
+     * @return true if found and removed; false if not found.
+     */
+    bool removeDocId(DocID docId) noexcept;
+
+    /**
+     * @brief Checks if a DocID exists in the posting list in O(N) or O(log N).
+     */
+    bool containsDocId(DocID docId) const noexcept;
+
+    /**
+     * @brief Locates the PostingNode for a given DocID, or returns nullptr.
+     */
+    const PostingNode* findNode(DocID docId) const noexcept;
+    PostingNode* findNode(DocID docId) noexcept;
+
+    /**
      * @brief Linear two-pointer set intersection (AND).
      * Time: O(L_A + L_B), Space: O(min(L_A, L_B)).
      */

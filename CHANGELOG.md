@@ -6,6 +6,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - Phase 5 Complete (November 2026)
+
+### Added
+- **Tokenizer Subsystem (`Tokenizer`, `Token`, `TokenizerConfig`):**
+  - High-performance deterministic lexical tokenizer with `CustomDynamicArray<Token>` streaming.
+  - Monotonic 0-based position tracking preserving original word positions even when filters skip tokens.
+  - Punctuation delimiter handling, alphanumeric token grouping, and number preservation.
+  - Configurable minimum/maximum token lengths, case folding, and stop-word filtering.
+- **Text Normalizer (`TextNormalizer`):**
+  - RFC 3629 standard UTF-8 validation rejecting overlong encodings, truncated sequences, and UTF-16 surrogates.
+  - Safe handling of multi-byte UTF-8 sequences (Urdu, Arabic, Cyrillic, accented Latin) without character corruption.
+  - ASCII case folding `[A-Z] -> [a-z]` preserving multi-byte payloads.
+- **Inverted Index Engine (`InvertedIndex`):**
+  - Primary vocabulary mapping backed by `CustomHashTable<std::string, CustomPostingList*>`.
+  - Posting chains stored in sorted `DocID` order via 24-byte `PostingNode` records.
+  - Independent tracking of filename (`nameTermFreq`) and body (`bodyTermFreq`) term frequencies.
+  - Accurate document frequency ($DF(t)$) computed as distinct containing documents.
+  - Vocabulary synchronization with `CustomTrie` for Latin alphanumeric terms `[a-z0-9]`, with safe non-ASCII bypass.
+  - Complete document removal (`removeDocument`), empty posting list cleanup, and term deallocation.
+- **Indexing Orchestration Pipeline (`IndexingPipeline`):**
+  - Coordinates `DocumentCatalog`, content extraction (`ExtractionResult`), tokenization, and `InvertedIndex`.
+  - Granular extraction status handling: full indexing for `Success`, truncated body for `Partial`, filename-only indexing for `MetadataOnly`, `UnsupportedFormat`, `Corrupted`, `Encrypted`, and `Failed`.
+  - Safe atomic commit semantics with per-document local frequency accumulation before index insertion.
+  - Idempotent document update (`updateDocument`) and removal (`removeDocument`) without stale postings.
+- **Index Integrity Validator (`IndexIntegrityChecker`):**
+  - Deep non-mutating audit validating DocID bounds, ascending posting order, non-zero frequencies, field bitmask consistency, document frequency agreement, and Trie synchronization.
+- **Quality Assurance & Benchmarks:**
+  - Added unit test suites: `Test_TextNormalizer.cpp`, `Test_Tokenizer.cpp`, `Test_InvertedIndex.cpp`, `Test_IndexingPipeline.cpp`, `Test_IndexIntegrity.cpp`.
+  - Added synthetic corpus benchmarks: 100, 1,000, and 10,000 documents reaching $>20,000$ docs/sec ($>1.5\text{M}$ tokens/sec).
+  - Total integrated test assertions increased to **13,040 assertions (100% pass rate, 0 failures, 0 sanitizer warnings)**.
+
+---
+
 ## [0.4.2] - Phase 4.2 Complete (November 2026)
 
 ### Added

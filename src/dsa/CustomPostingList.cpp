@@ -86,6 +86,67 @@ void CustomPostingList::appendNode(DocID docId, uint16_t nameFreq, uint16_t body
     }
 }
 
+bool CustomPostingList::removeDocId(DocID docId) noexcept {
+    if (!m_head) return false;
+
+    PostingNode* current = m_head;
+    PostingNode* prev = nullptr;
+
+    while (current) {
+        if (current->docId == docId) {
+            if (!prev) {
+                m_head = current->next;
+            } else {
+                prev->next = current->next;
+            }
+
+            if (current == m_tail) {
+                m_tail = prev;
+            }
+
+            delete current;
+            if (m_docFreq > 0) {
+                --m_docFreq;
+            }
+            return true;
+        }
+
+        if (current->docId > docId) {
+            // Because list is sorted in ascending DocID, if current->docId > docId, docId cannot exist
+            break;
+        }
+
+        prev = current;
+        current = current->next;
+    }
+
+    return false;
+}
+
+bool CustomPostingList::containsDocId(DocID docId) const noexcept {
+    return findNode(docId) != nullptr;
+}
+
+const PostingNode* CustomPostingList::findNode(DocID docId) const noexcept {
+    const PostingNode* current = m_head;
+    while (current) {
+        if (current->docId == docId) return current;
+        if (current->docId > docId) break;
+        current = current->next;
+    }
+    return nullptr;
+}
+
+PostingNode* CustomPostingList::findNode(DocID docId) noexcept {
+    PostingNode* current = m_head;
+    while (current) {
+        if (current->docId == docId) return current;
+        if (current->docId > docId) break;
+        current = current->next;
+    }
+    return nullptr;
+}
+
 void CustomPostingList::addOccurrence(DocID docId, bool isFilename) {
     // Fast path: sequential monotonic append or update on current document
     if (m_tail && m_tail->docId == docId) {

@@ -118,6 +118,32 @@ bool CustomTrie::insert(const std::string& word, uint32_t freq) {
     return true;
 }
 
+bool CustomTrie::remove(const std::string& word) {
+    if (word.empty() || !m_root || !isValidAsciiWord(word)) {
+        return false;
+    }
+
+    TrieNode* current = m_root;
+    for (char c : word) {
+        int idx = charToIndex(c);
+        if (idx == -1 || !current->children[idx]) {
+            return false;
+        }
+        current = current->children[idx];
+    }
+
+    if (current && current->isEndOfWord) {
+        current->isEndOfWord = false;
+        current->searchFrequency = 0;
+        if (m_wordCount > 0) {
+            --m_wordCount;
+        }
+        return true;
+    }
+
+    return false;
+}
+
 bool CustomTrie::contains(const std::string& word) const noexcept {
     if (word.empty() || !m_root) {
         return false;

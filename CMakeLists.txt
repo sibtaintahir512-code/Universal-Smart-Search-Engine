@@ -64,6 +64,12 @@ add_library(SearchEngineCore STATIC
     src/indexing/ScanStatistics.cpp
     src/indexing/FileScanner.cpp
     src/indexing/ScanWorker.cpp
+    src/indexing/TextNormalizer.cpp
+    src/indexing/Tokenizer.cpp
+    src/indexing/InvertedIndex.cpp
+    src/indexing/IndexingPipeline.cpp
+    src/indexing/IndexingStatistics.cpp
+    src/indexing/IndexIntegrityChecker.cpp
     src/extraction/ExtractionResult.cpp
     src/extraction/ExtractionCache.cpp
     src/extraction/TextExtractor.cpp

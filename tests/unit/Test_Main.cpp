@@ -36,6 +36,14 @@ namespace sse::test {
     void runExtractionManagerTests();
     void runPhase41HardeningTests();
     void runPhase42ComplianceTests();
+
+    // Phase 5 Inverted Index & Tokenizer Pipeline Test Suites
+    void runTextNormalizerTests();
+    void runTokenizerTests();
+    void runInvertedIndexTests();
+    void runIndexingPipelineTests();
+    void runIndexIntegrityTests();
+    void runPhase5BenchmarkTests();
 }
 
 int main() {
@@ -89,7 +97,16 @@ int main() {
     sse::test::runPhase41HardeningTests();
     sse::test::runPhase42ComplianceTests();
 
-    // 5. Print Final Summary
+    // 5. Run Phase 5 Inverted Index & Tokenizer Test Suites
+    std::cout << "\n--- Executing Phase 5 Inverted Index & Tokenizer Test Suites ---" << std::endl;
+    sse::test::runTextNormalizerTests();
+    sse::test::runTokenizerTests();
+    sse::test::runInvertedIndexTests();
+    sse::test::runIndexingPipelineTests();
+    sse::test::runIndexIntegrityTests();
+    sse::test::runPhase5BenchmarkTests();
+
+    // 6. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

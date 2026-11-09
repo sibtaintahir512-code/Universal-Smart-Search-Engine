@@ -2,8 +2,8 @@
 ## Universal Smart Search Engine — Release 1
 **Target Platform:** Windows 10/11 x64 (MSVC 2022 / C++17 / CMake / Qt 6 Widgets)  
 **Academic Context:** University Data Structures & Algorithms Coursework  
-**Current Phase:** Phase 4.2 Complete (Awaiting Gate Review for Phase 5)  
-**Last Updated:** November 8, 2026  
+**Current Phase:** Phase 5 Complete (Awaiting Gate Review for Phase 6)  
+**Last Updated:** November 9, 2026  
 
 ---
 
@@ -18,8 +18,8 @@
 | **Phase 4** | Content Extraction Engine | **COMPLETED** | Streaming text/code parsers, Office/PDF/Multimedia extractors, 1,574 tests passed |
 | **Phase 4.1**| Extraction Reliability & Hardening | **COMPLETED** | PDFDocumentParser, miniz ZIP, pugixml, slide order fix, 1,627 tests passed |
 | **Phase 4.2**| PDF Replacement & Extraction Compliance | **COMPLETED** | Google PDFium engine, XML/ZIP security hardening, XLSX rels order, 1,664 tests passed |
-| **Phase 5** | Inverted Index & Tokenizer Pipeline | *Awaiting Approval* | Stop-word filter, 24-byte PostingNode layout, vocabulary table |
-| **Phase 6** | Search & Boolean Query Engine | *Planned* | Shunting-Yard parser, RPN evaluator, set intersection/union |
+| **Phase 5** | Inverted Index & Tokenizer Pipeline | **COMPLETED** | Tokenizer, TextNormalizer, InvertedIndex, Pipeline, IntegrityChecker, 13,040 tests passed |
+| **Phase 6** | Search & Boolean Query Engine | *Awaiting Approval* | Shunting-Yard parser, RPN evaluator, set intersection/union |
 | **Phase 7** | Relevance Ranking & Smart Search | *Planned* | TF-IDF scoring, bounded Min-Heap Top-K, Trie autocomplete |
 | **Phase 8** | Persistence & Binary Serialization | *Planned* | Compact binary format, CRC32, Reference Remapping compaction |
 | **Phase 9** | Qt 6 Widgets Desktop GUI | *Planned* | Dark theme UI, 10 screens, worker QThread isolation |
