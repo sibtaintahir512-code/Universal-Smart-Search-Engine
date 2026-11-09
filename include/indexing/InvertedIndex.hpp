@@ -51,6 +51,15 @@ public:
                  uint8_t fieldMask);
 
     /**
+     * @brief Restores a posting entry during deserialization without touching DocumentLengthStatistics.
+     */
+    void restorePosting(const std::string& term,
+                        DocID docId,
+                        uint16_t nameFreq,
+                        uint16_t bodyFreq,
+                        uint8_t fieldMask);
+
+    /**
      * @brief Removes a document's postings across the entire inverted index.
      * Cleans up empty posting lists, updates total postings count, and prunes Trie entries.
      * @param docId Target document identifier to remove.

@@ -98,6 +98,15 @@ public:
      */
     void clear() noexcept;
 
+    /**
+     * @brief Restores an existing document entry during index deserialization.
+     * Preserves exact original DocID, metadata, and string pool contents.
+     */
+    bool restoreDocument(const FileMetadata& metadata,
+                         const std::string& canonicalPath,
+                         const std::string& filename,
+                         bool isActive);
+
 private:
     mutable std::shared_mutex               m_mutex;
     DocID                                  m_highestDocId{0};

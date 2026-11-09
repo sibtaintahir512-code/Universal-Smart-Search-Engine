@@ -83,6 +83,13 @@ add_library(SearchEngineCore STATIC
     src/ranking/TopKSelector.cpp
     src/ranking/RankingStatistics.cpp
     src/ranking/RankingEngine.cpp
+    src/persistence/CRC32.cpp
+    src/persistence/PersistenceStatistics.cpp
+    src/persistence/IndexSerializer.cpp
+    src/persistence/IndexDeserializer.cpp
+    src/persistence/IndexCompactor.cpp
+    src/persistence/IndexRecoveryManager.cpp
+    src/persistence/IndexPersistenceManager.cpp
     src/extraction/ExtractionResult.cpp
     src/extraction/ExtractionCache.cpp
     src/extraction/TextExtractor.cpp

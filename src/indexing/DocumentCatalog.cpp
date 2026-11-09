@@ -196,4 +196,40 @@ void DocumentCatalog::clear() noexcept {
     m_activeCount = 0;
 }
 
+bool DocumentCatalog::restoreDocument(const FileMetadata& metadata,
+                                      const std::string& canonicalPath,
+                                      const std::string& filename,
+                                      bool isActive) {
+    if (metadata.docId == INVALID_DOC_ID) return false;
+
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+
+    std::size_t targetIndex = static_cast<std::size_t>(metadata.docId - 1);
+    while (m_records.size() <= targetIndex) {
+        FileMetadata dummy{};
+        dummy.docId = static_cast<DocID>(m_records.size() + 1);
+        dummy.flags = 0;
+        m_records.push_back(dummy);
+    }
+
+    FileMetadata docMeta = metadata;
+    appendToStringPool(filename, docMeta.nameOffset, docMeta.nameLength);
+    appendToStringPool(canonicalPath, docMeta.pathOffset, docMeta.pathLength);
+
+    if (isActive) {
+        docMeta.flags |= META_FLAG_ACTIVE;
+        m_pathToDocId.insert(canonicalPath, docMeta.docId);
+        ++m_activeCount;
+    } else {
+        docMeta.flags &= ~META_FLAG_ACTIVE;
+    }
+
+    m_records[targetIndex] = docMeta;
+    if (docMeta.docId > m_highestDocId) {
+        m_highestDocId = docMeta.docId;
+    }
+
+    return true;
+}
+
 } // namespace sse::indexing

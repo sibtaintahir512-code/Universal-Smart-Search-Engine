@@ -72,6 +72,19 @@ namespace sse::test {
     void runRankingExplanationTests();
     void runRankingStatisticsTests();
     void runPhase7BenchmarkTests();
+
+    // Phase 8 Binary Index Serialization & Persistence
+    void runCRC32Tests();
+    void runBinaryIOTests();
+    void runIndexFileHeaderTests();
+    void runSectionDirectoryTests();
+    void runIndexSerializationTests();
+    void runPersistenceIntegrityTests();
+    void runAtomicSaveTests();
+    void runIndexRecoveryTests();
+    void runIndexCompactionTests();
+    void runRoundTripEquivalenceTests();
+    void runPhase8Benchmarks();
 }
 
 int main() {
@@ -164,7 +177,21 @@ int main() {
     sse::test::runRankingStatisticsTests();
     sse::test::runPhase7BenchmarkTests();
 
-    // 8. Print Final Summary
+    // 8. Run Phase 8 Binary Index Serialization & Persistence Test Suites
+    std::cout << "\n--- Executing Phase 8 Binary Index Serialization & Persistence Test Suites ---" << std::endl;
+    sse::test::runCRC32Tests();
+    sse::test::runBinaryIOTests();
+    sse::test::runIndexFileHeaderTests();
+    sse::test::runSectionDirectoryTests();
+    sse::test::runIndexSerializationTests();
+    sse::test::runPersistenceIntegrityTests();
+    sse::test::runAtomicSaveTests();
+    sse::test::runIndexRecoveryTests();
+    sse::test::runIndexCompactionTests();
+    sse::test::runRoundTripEquivalenceTests();
+    sse::test::runPhase8Benchmarks();
+
+    // 9. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

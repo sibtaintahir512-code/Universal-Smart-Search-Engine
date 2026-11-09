@@ -76,6 +76,35 @@ void InvertedIndex::addTerm(const std::string& term,
     m_lengthStats.accumulateDocumentLength(docId, nameFreq, bodyFreq);
 }
 
+void InvertedIndex::restorePosting(const std::string& term,
+                                   DocID docId,
+                                   uint16_t nameFreq,
+                                   uint16_t bodyFreq,
+                                   uint8_t fieldMask) {
+    if (term.empty() || docId == INVALID_DOC_ID) return;
+
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+
+    dsa::CustomPostingList** listPtr = m_table.find(term);
+    dsa::CustomPostingList* list = nullptr;
+
+    if (!listPtr || !(*listPtr)) {
+        list = new dsa::CustomPostingList();
+        m_table.insert(term, list);
+        if (dsa::CustomTrie::isValidAsciiWord(term)) {
+            m_trie.insert(term, 1);
+        }
+    } else {
+        list = *listPtr;
+    }
+
+    uint32_t prevFreq = list->documentFrequency();
+    list->appendNode(docId, nameFreq, bodyFreq, fieldMask);
+    if (list->documentFrequency() > prevFreq) {
+        ++m_totalPostings;
+    }
+}
+
 bool InvertedIndex::removeDocument(DocID docId) {
     if (docId == INVALID_DOC_ID) return false;
 

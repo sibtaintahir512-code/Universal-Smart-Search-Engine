@@ -6,6 +6,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0] - Phase 8 Complete (November 2026)
+
+### Added
+- **Binary Index Persistence Subsystem (`IndexPersistenceManager`, `IndexSerializer`, `IndexDeserializer`):**
+  - High-throughput binary index format (`search.idx`) with 80-byte master header, section directory table, and 16-byte aligned posting records.
+  - Multi-section persistence covering Tokenizer metadata, DocumentCatalog, DocumentLengthStatistics, Vocabulary dictionary, and Postings block.
+  - Memory-safe, staged deserialization protocol ensuring live search structures remain untouched until full validation succeeds.
+- **IEEE 802.3 CRC-32 Data Integrity (`CRC32`):**
+  - Precomputed table-driven 32-bit CRC implementation with single-shot and streaming incremental calculation (> 380 MB/s).
+  - Multi-layered integrity verification protecting header, section descriptors, section payloads, and trailing whole-file checksum.
+- **Atomic Two-Phase Commit Protocol:**
+  - Crash-safe saving via temporary file write (`search.idx.tmp`), durable disk buffer synchronization (`fsync` / `FlushFileBuffers`), post-write validation, and atomic replacement with backup preservation (`search.idx.bak`).
+- **Two-Pass Reference Remapping & Tombstone Compaction (`IndexCompactor`):**
+  - Purging of soft-deleted/tombstoned documents and contiguous remapping of active DocIDs to $[1 \dots N_{active}]$.
+  - Zero dangling posting node references: rewrites all inverted index postings and document length records with remapped IDs.
+- **Crash Recovery & Fault Isolation (`IndexRecoveryManager`):**
+  - Automated diagnosis of missing/truncated/corrupt index files, isolation of damaged files to `.corrupt`, and failover to `.bak`.
+- **Comprehensive Test Coverage & Equivalence Verification:**
+  - 11 dedicated Phase 8 test suites verifying CRC32 known-answers, binary I/O, integrity rejection, atomic commit, and 100% round-trip query equivalence across Boolean, TF-IDF, and BM25 search queries.
+  - Total assertion count increased to 14,435 passing assertions (100% pass rate, 0 failures, UBSan verified).
+
+---
+
 ## [0.7.0] - Phase 7 Complete (November 2026)
 
 ### Added

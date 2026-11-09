@@ -58,6 +58,17 @@ add_executable(UnitTestsRunner
     unit/Test_RankingExplanation.cpp
     unit/Test_RankingStatistics.cpp
     unit/Test_Phase7_Benchmarks.cpp
+    unit/Test_CRC32.cpp
+    unit/Test_BinaryIO.cpp
+    unit/Test_IndexFileHeader.cpp
+    unit/Test_SectionDirectory.cpp
+    unit/Test_IndexSerialization.cpp
+    unit/Test_PersistenceIntegrity.cpp
+    unit/Test_AtomicSave.cpp
+    unit/Test_IndexRecovery.cpp
+    unit/Test_IndexCompaction.cpp
+    unit/Test_RoundTripEquivalence.cpp
+    unit/Test_Phase8_Benchmarks.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE
