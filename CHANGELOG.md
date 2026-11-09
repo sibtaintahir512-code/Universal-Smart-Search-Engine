@@ -6,6 +6,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - Phase 6 Complete (November 2026)
+
+### Added
+- **Query Lexical Analyzer (`QueryLexer`, `QueryToken`):**
+  - Case-insensitive Boolean operator detection (`AND`, `OR`, `NOT`, `and`, `or`, `not`).
+  - Field qualifier detection (`name:`, `body:`, case-insensitive `NAME:`, `BODY:`).
+  - Explicit rejection of unsupported search syntax: wildcards (`*`, `?`), fuzzy (`~`), proximity (`^`).
+  - Parenthesis grouping tokens and exact source character offset tracking for syntax error reporting.
+  - RFC 3629 UTF-8 validation and configurable query-length / token-count limits.
+- **Recursive-Descent Query Parser (`QueryParser`, `QueryNode`):**
+  - Abstract Syntax Tree (AST) construction with strict operator precedence (Parentheses > NOT > AND > OR).
+  - Implicit `AND` insertion between adjacent search terms and parenthesized subexpressions.
+  - Comprehensive syntax error detection: empty queries, missing operands, mismatched parentheses, unexpected operators, and consecutive operators.
+  - Exception-safe RAII smart pointer ownership (`std::unique_ptr<QueryNode>`) with AST depth and node-count limits.
+- **Algorithmic Result Set (`ResultSet`):**
+  - Pure custom DSA result set backed by `CustomDynamicArray<DocID>` (Zero STL container usage).
+  - Strict ascending DocID ordering with duplicate elimination.
+  - Linear $O(N + M)$ two-pointer intersection, union, and difference algorithms.
+  - Logarithmic $O(\log N)$ binary search membership checks.
+- **Boolean Query Evaluator (`QueryEvaluator`):**
+  - Fast $O(1)$ posting list retrieval per search term via `InvertedIndex`.
+  - Field-restricted occurrence filtering distinguishing filename and body terms.
+  - Short-circuit optimization for empty AND intersections.
+  - Strict document universe evaluation for unary NOT expressions ($U \setminus S$), resolved from active `DocumentCatalog` documents.
+  - Tombstone exclusion guaranteeing deleted or inactive documents are never returned.
+  - Cooperative atomic cancellation checks.
+- **Search Facade Service (`SearchService`, `SearchResult`, `SearchResponse`):**
+  - High-level orchestration from raw query string to validated `SearchResponse` DTO.
+  - Metadata resolution via `DocumentCatalog` (filename, path, extension, category, size, modification time, content status).
+  - Ascending DocID deterministic ordering (Zero premature Phase 7 relevance ranking).
+  - Pagination support with offset, page limit, and preserved total matching counts.
+  - Cumulative search telemetry via `SearchStatistics`.
+- **Search Invariant Auditor (`SearchIntegrityChecker`):**
+  - Verifies that search queries never mutate the inverted index (vocabulary size, total postings).
+  - Confirms all returned DocIDs are active and strictly sorted.
+- **Automated Test Suites & Benchmarks:**
+  - Added unit test suites: `Test_QueryLexer.cpp`, `Test_QueryParser.cpp`, `Test_QueryPrecedence.cpp`, `Test_ResultSet.cpp`, `Test_BooleanEvaluator.cpp`, `Test_FieldSearch.cpp`, `Test_SearchPagination.cpp`, `Test_SearchCancellation.cpp`, `Test_SearchIntegrity.cpp`, `Test_SearchService.cpp`.
+  - Added Phase 6 synthetic corpus benchmarks (100, 1,000, and 10,000 documents) evaluating single-term, AND, OR, NOT, nested, and field queries with sub-millisecond latencies.
+  - Total integrated test assertions increased from 13,040 to **13,644 assertions (100% pass rate, 0 failures, 0 sanitizer warnings)**.
+
+---
+
 ## [0.5.0] - Phase 5 Complete (November 2026)
 
 ### Added

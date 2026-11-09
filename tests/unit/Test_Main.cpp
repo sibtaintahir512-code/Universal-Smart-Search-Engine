@@ -44,6 +44,19 @@ namespace sse::test {
     void runIndexingPipelineTests();
     void runIndexIntegrityTests();
     void runPhase5BenchmarkTests();
+
+    // Phase 6 Search Engine & Boolean Query Processing Test Suites
+    void runQueryLexerTests();
+    void runQueryParserTests();
+    void runQueryPrecedenceTests();
+    void runResultSetTests();
+    void runBooleanEvaluatorTests();
+    void runFieldSearchTests();
+    void runSearchPaginationTests();
+    void runSearchCancellationTests();
+    void runSearchIntegrityTests();
+    void runSearchServiceTests();
+    void runPhase6BenchmarkTests();
 }
 
 int main() {
@@ -106,7 +119,21 @@ int main() {
     sse::test::runIndexIntegrityTests();
     sse::test::runPhase5BenchmarkTests();
 
-    // 6. Print Final Summary
+    // 6. Run Phase 6 Search Engine & Boolean Query Processing Test Suites
+    std::cout << "\n--- Executing Phase 6 Search Engine & Boolean Query Processing Test Suites ---" << std::endl;
+    sse::test::runQueryLexerTests();
+    sse::test::runQueryParserTests();
+    sse::test::runQueryPrecedenceTests();
+    sse::test::runResultSetTests();
+    sse::test::runBooleanEvaluatorTests();
+    sse::test::runFieldSearchTests();
+    sse::test::runSearchPaginationTests();
+    sse::test::runSearchCancellationTests();
+    sse::test::runSearchIntegrityTests();
+    sse::test::runSearchServiceTests();
+    sse::test::runPhase6BenchmarkTests();
+
+    // 7. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

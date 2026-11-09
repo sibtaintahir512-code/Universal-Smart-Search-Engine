@@ -70,6 +70,13 @@ add_library(SearchEngineCore STATIC
     src/indexing/IndexingPipeline.cpp
     src/indexing/IndexingStatistics.cpp
     src/indexing/IndexIntegrityChecker.cpp
+    src/search/ResultSet.cpp
+    src/search/QueryLexer.cpp
+    src/search/QueryParser.cpp
+    src/search/QueryEvaluator.cpp
+    src/search/SearchStatistics.cpp
+    src/search/SearchService.cpp
+    src/search/SearchIntegrityChecker.cpp
     src/extraction/ExtractionResult.cpp
     src/extraction/ExtractionCache.cpp
     src/extraction/TextExtractor.cpp

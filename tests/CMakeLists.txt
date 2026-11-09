@@ -34,6 +34,17 @@ add_executable(UnitTestsRunner
     unit/Test_IndexingPipeline.cpp
     unit/Test_IndexIntegrity.cpp
     unit/Test_Phase5_Benchmarks.cpp
+    unit/Test_QueryLexer.cpp
+    unit/Test_QueryParser.cpp
+    unit/Test_QueryPrecedence.cpp
+    unit/Test_ResultSet.cpp
+    unit/Test_BooleanEvaluator.cpp
+    unit/Test_FieldSearch.cpp
+    unit/Test_SearchPagination.cpp
+    unit/Test_SearchCancellation.cpp
+    unit/Test_SearchIntegrity.cpp
+    unit/Test_SearchService.cpp
+    unit/Test_Phase6_Benchmarks.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE

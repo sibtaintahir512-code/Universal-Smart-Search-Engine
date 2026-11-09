@@ -162,18 +162,20 @@ The development lifecycle for Release 1 is organized into 11 strictly sequenced 
 ---
 
 ### Phase 6: Search & Boolean Query Processing
-- **Objectives:** Parse user queries and evaluate complex Boolean expressions.
+- **Status:** Complete (Verified: 13,644 / 13,644 Tests Passed).
+- **Objectives:** Parse user queries, enforce formal operator precedence, evaluate complex Boolean expressions, and retrieve document metadata with deterministic ordering.
 - **Tasks:**
-  1. Implement `QueryParser` with Dijkstra's Shunting-Yard algorithm.
-  2. Enforce operator precedence: `()` > `NOT` > `AND` > `OR`.
-  3. Implement implicit `AND` conjunction insertion.
-  4. Implement `BooleanSearchEngine` evaluating postfix token streams via stack.
-  5. Handle syntax errors with precise column offset reporting.
+  1. Implement `QueryLexer` supporting case-insensitive Boolean operators (`AND`, `OR`, `NOT`), field qualifiers (`name:`, `body:`), parenthesis grouping, RFC 3629 UTF-8 validation, and rejection of unsupported wildcards/fuzzy operators.
+  2. Implement `QueryParser` with recursive-descent AST construction, formal precedence (NOT > AND > OR), implicit AND insertion, syntax error reporting, and AST bounds checking.
+  3. Implement `ResultSet` backed by `CustomDynamicArray<DocID>` with linear two-pointer set operations and logarithmic binary search membership.
+  4. Implement `QueryEvaluator` evaluating AST expressions against `InvertedIndex` and `DocumentCatalog` with field filtering, short-circuiting, and active document universe resolution for NOT expressions ($U \setminus S$).
+  5. Implement `SearchService` orchestrating end-to-end query execution, pagination (`offset`, `limit`), and `DocumentCatalog` metadata resolution with deterministic ascending DocID ordering.
+  6. Implement `SearchStatistics` and `SearchIntegrityChecker` verifying non-mutating index invariant.
 - **Dependencies:** Phase 5.
-- **Expected Deliverables:** Boolean query evaluation engine in `search/`.
-- **Testing Requirements:** Logical correctness tests on complex queries: `(A OR B) AND (C NOT D)`.
-- **Completion Criteria:** 100% agreement with formal set theory truth tables.
-- **Risks:** Stack underflow/overflow on malformed query strings.
+- **Expected Deliverables:** Complete Boolean search subsystem in `include/search/` and `src/search/`.
+- **Testing Requirements:** Logical correctness tests on single-term, AND, OR, NOT, field-restricted, nested parentheses, pagination, cancellation, and invariant integrity.
+- **Completion Criteria:** 100% agreement with formal set theory truth tables across synthetic test collections.
+- **Risks:** Stack overflow or recursion depth on malformed queries (mitigated via AST depth limits and iterative two-pointer set evaluations).
 - **Relative Complexity:** High.
 
 ---
