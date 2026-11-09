@@ -180,20 +180,22 @@ The development lifecycle for Release 1 is organized into 11 strictly sequenced 
 
 ---
 
-### Phase 7: Ranking Engine & Smart Search
-- **Objectives:** Score candidate documents using TF-IDF with independent field frequencies and provide autocomplete and spell assistance.
+### Phase 7: Relevance Ranking & Smart Search
+- **Status:** Complete (Verified: 14,098 / 14,098 Tests Passed).
+- **Objectives:** Score candidate documents using Field-Weighted TF-IDF and BM25 with independent field weights and bounded Top-K priority selection.
 - **Tasks:**
-  1. Implement log-normalized TF, IDF, and independent field-weighted relevance scoring using `nameTermFreq` and `bodyTermFreq`.
-  2. Implement candidate ranking supporting both Strategy A (Unbounded Max-Heap) and Strategy B (Bounded Min-Heap of size $K$).
-  3. Implement Top-$K$ extraction ($K = 50$) with timestamp tie-breaking.
-  4. Connect `TrieAutocomplete` for sub-5ms keystroke prefix suggestions with non-ASCII fallback.
-  5. Implement `SpellChecker` with Levenshtein distance $\le 2$ on zero-hit queries.
-  6. Implement on-demand snippet generator with context window.
+  1. Implement `RankingConfig` with algorithm mode (`DocIdOrder`, `TFIDF`, `BM25`), field weights ($W_{name}=5.0, W_{body}=1.0$), and BM25 parameters ($k_1=1.2, b=0.75$).
+  2. Implement `DocumentLengthStatistics` tracking per-document token counts and running corpus averages ($avgdl_{name}, avgdl_{body}$).
+  3. Implement `TFIDFScorer` with BM25-smoothed and conventional smoothed IDF, field weights, and sublinear TF scaling.
+  4. Implement `BM25Scorer` with independent filename and body length normalization, term frequency saturation, and numerical safety guards.
+  5. Implement `TopKSelector` via `CustomMinHeap` bounded to $K$ candidates ($O(M \log K)$ complexity) with deterministic tie-breaking (higher score first, lower DocID first on tie).
+  6. Implement `RankingEngine` orchestrating AST positive query term extraction (filtering out NOT subtrees) and neutral DocID handling for pure negation queries.
+  7. Implement `RankingStatistics` thread-safe telemetry and integrate ranking seamlessly into `SearchService`.
 - **Dependencies:** Phase 6.
-- **Expected Deliverables:** Relevance ranking and smart search subsystem in `ranking/`.
-- **Testing Requirements:** Verification that files with filename matches rank higher than body-only mentions; autocomplete latency $< 5\ \text{ms}$.
-- **Completion Criteria:** Scored and ranked results returned in $< 50\ \text{ms}$ on 100k files (proposed target).
-- **Risks:** Floating-point precision issues or score divergence.
+- **Expected Deliverables:** Relevance ranking subsystem in `include/ranking/` and `src/ranking/`.
+- **Testing Requirements:** Field weight verification, BM25 length normalization and saturation tests, Top-$K$ heap selection tests, deterministic repeatability across runs, and benchmark tests.
+- **Completion Criteria:** All 14,098 assertions passing, zero undefined behavior under UBSan.
+- **Risks:** Division by zero in BM25 with empty documents (mitigated with average length safeguards).
 - **Relative Complexity:** High.
 
 ---

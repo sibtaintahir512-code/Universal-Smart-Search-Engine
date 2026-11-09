@@ -12,6 +12,7 @@ InvertedIndex::InvertedIndex(InvertedIndex&& other) noexcept {
     std::unique_lock<std::shared_mutex> lock(other.m_mutex);
     m_table = std::move(other.m_table);
     m_trie = std::move(other.m_trie);
+    m_lengthStats = std::move(other.m_lengthStats);
     m_totalPostings = other.m_totalPostings;
     other.m_totalPostings = 0;
 }
@@ -25,6 +26,7 @@ InvertedIndex& InvertedIndex::operator=(InvertedIndex&& other) noexcept {
         deallocateAllLists();
         m_table = std::move(other.m_table);
         m_trie = std::move(other.m_trie);
+        m_lengthStats = std::move(other.m_lengthStats);
         m_totalPostings = other.m_totalPostings;
         other.m_totalPostings = 0;
     }
@@ -71,6 +73,7 @@ void InvertedIndex::addTerm(const std::string& term,
     if (list->documentFrequency() > prevFreq) {
         ++m_totalPostings;
     }
+    m_lengthStats.accumulateDocumentLength(docId, nameFreq, bodyFreq);
 }
 
 bool InvertedIndex::removeDocument(DocID docId) {
@@ -115,6 +118,8 @@ bool InvertedIndex::removeDocument(DocID docId) {
         }
     }
 
+    m_lengthStats.removeDocument(docId);
+
     return anyRemoved;
 }
 
@@ -144,6 +149,7 @@ void InvertedIndex::clear() noexcept {
     deallocateAllLists();
     m_table.clear();
     m_trie.clear();
+    m_lengthStats.clear();
     m_totalPostings = 0;
 }
 

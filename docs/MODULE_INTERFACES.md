@@ -320,20 +320,33 @@ public:
 ---
 
 ### 2.12 RankingEngine
-- **Responsibility:** Computes composite TF-IDF relevance scores for matching candidates and extracts Top-$K$ results via `CustomMaxHeap`.
-- **Inputs:** Candidate `CustomPostingList`, parsed query terms, target integer $K$.
-- **Outputs:** Array of Top-$K$ `SearchResultItem` DTOs.
-- **Dependencies:** `CustomMaxHeap`, `InvertedIndex`, `DocumentCatalog`.
+- **Responsibility:** Computes composite TF-IDF and BM25 relevance scores for candidate documents and extracts Top-$K$ results via bounded `CustomMinHeap`.
+- **Inputs:** Candidate `ResultSet`, parsed query AST root, target count $K$.
+- **Outputs:** Dynamic array of ranked `ScoredDocument` results.
+- **Dependencies:** `CustomMinHeap`, `CustomDynamicArray`, `InvertedIndex`, `DocumentCatalog`, `DocumentLengthStatistics`.
 
 #### Public Operations Interface Specification:
 ```cpp
 class RankingEngine {
 public:
-    RankingEngine(const InvertedIndex* index, const DocumentCatalog* catalog);
+    RankingEngine(const indexing::InvertedIndex* index,
+                  const indexing::DocumentCatalog* catalog,
+                  const DocumentLengthStatistics* lengthStats,
+                  RankingConfig config = RankingConfig{}) noexcept;
 
-    std::vector<SearchResultItem> rank(const CustomPostingList& candidates, 
-                                       const std::vector<std::string>& queryTerms, 
-                                       size_t topK = 50);
+    static dsa::CustomDynamicArray<ScoringTerm> extractPositiveQueryTerms(const search::QueryNode* root);
+
+    dsa::CustomDynamicArray<ScoredDocument> rankCandidates(
+        const search::ResultSet& candidates,
+        const search::QueryNode* queryAst,
+        std::size_t topK = 0);
+
+    void setConfig(RankingConfig config) noexcept;
+    const RankingConfig& config() const noexcept;
+
+    const RankingStatistics& statistics() const noexcept;
+    RankingStatistics& statistics() noexcept;
+    void resetStatistics() noexcept;
 };
 ```
 

@@ -149,54 +149,28 @@ Algorithm EvaluateRPN(rpnQueue, invertedIndex, universeList):
 
 ---
 
-## 3. Relevance Ranking Engine (TF-IDF & Heap Selection)
+## 3. Relevance Ranking Engine (TF-IDF, BM25 & Heap Selection)
 
-### 3.1 Unification of Metadata and Content Scoring
-A key challenge is ranking results fairly when some documents match by filename (e.g., an image named `dijkstra_graph.png`) while others match by deep body text (e.g., a PDF mentioning "dijkstra" 40 times).
+### 3.1 Field-Aware Relevance Models
+The ranking subsystem implements two production relevance algorithms:
 
-To achieve balanced, intuitive ranking, the system computes a composite field-weighted score utilizing the independent frequency counters stored in `PostingNode` (`nameTermFreq` and `bodyTermFreq`):
+#### 1. Field-Weighted BM25 (Default)
+$$\text{Score}_{\text{BM25}}(d, Q) = \sum_{t \in Q \cap d} \text{IDF}_{\text{BM25}}(t) \cdot \left[ W_{\text{name}} \cdot S_{\text{BM25}}(t, d_{\text{name}}) + W_{\text{body}} \cdot S_{\text{BM25}}(t, d_{\text{body}}) \right]$$
 
-$$\text{Score}(d, Q) = \left[ \sum_{t \in Q \cap d} \left( \left(TF_{body}(t, d) \times W_{body}\right) + \left(TF_{name}(t, d) \times W_{name}\right) \right) \times \ln\left(1 + \frac{N}{DF_t}\right) \right] \times \text{ModBonus}(d)$$
+Where:
+- $\text{IDF}_{\text{BM25}}(t) = \ln\left(1 + \frac{N - DF_t + 0.5}{DF_t + 0.5}\right)$.
+- Saturation: $S_{\text{BM25}}(t, d_{\text{field}}) = \frac{\text{TF}(t, d_{\text{field}}) \cdot (k_1 + 1)}{\text{TF}(t, d_{\text{field}}) + k_1 \cdot \left(1 - b + b \cdot \frac{|d_{\text{field}}|}{\text{avgdl}_{\text{field}}}\right)}$.
+- Parameters: $k_1 = 1.2$, $b = 0.75$, $W_{\text{name}} = 5.0$, $W_{\text{body}} = 1.0$.
 
-#### Component Breakdown:
-1. **$TF_{body}(t, d)$:** Stored in `posting.bodyTermFreq`. Log-normalized to prevent long documents from dominating results:
-   $$TF_{body}(t, d) = \begin{cases} 1 + \ln(posting.bodyTermFreq) & \text{if } posting.bodyTermFreq > 0 \\ 0 & \text{otherwise} \end{cases}$$
-2. **$W_{body} = 1.0$:** Baseline weight for body text occurrences.
-3. **$TF_{name}(t, d)$:** Stored in `posting.nameTermFreq`. Evaluated directly with linear weighting: $TF_{name}(t, d) = posting.nameTermFreq$.
-4. **$W_{name} = 5.0$:** Elevates filename matches so a file explicitly named after the query term ranks above documents that merely mention the term in passing.
-5. **$\text{IDF}(t) = \ln\left(1 + \frac{N}{DF_t}\right)$:** Inverse document frequency, penalizing common terms and rewarding rare, specific keywords.
-6. **$\text{ModBonus}(d)$:** Recency multiplier ($1.00 \le \text{ModBonus} \le 1.10$) giving slight preference to recently modified files.
+#### 2. Field-Weighted TF-IDF
+$$\text{Score}_{\text{TF-IDF}}(d, Q) = \sum_{t \in Q \cap d} \left[ W_{\text{name}} \cdot \text{TF}(t, d_{\text{name}}) + W_{\text{body}} \cdot \text{TF}(t, d_{\text{body}}) \right] \cdot \text{IDF}(t)$$
 
-> [!IMPORTANT]
-> **Design Decision Requiring Approval:** The field weight constants ($W_{name} = 5.0$, $W_{body} = 1.0$) and recency bonus formulation are recommended engineering defaults. They are explicitly flagged as an Open Architecture Decision for user approval.
-
-### 3.2 Top-$K$ Heap Selection Strategies
-
-To extract the Top-$K$ results ($K = 50$) from $M$ matching candidates, two heap-based strategies are evaluated:
-
-#### Strategy A: Unbounded Max-Heap ($O(M)$ Build + $K$ Extractions)
-- Inserts all $M$ candidates into an array and calls Floyd's linear `buildHeap()` in $O(M)$ time.
-- Extracts the top $K$ items via $K$ successive `extractMax()` operations in $K \times O(\log M)$ time.
-- **Time Complexity:** $O(M + K \log M)$.
-- **Auxiliary Space:** $O(M)$ heap nodes. Requires allocating memory proportional to candidate set size $M$.
-
-#### Strategy B: Bounded Min-Heap of Size $K$ ($O(M \log K)$ Online Filtering)
-- Allocates a fixed-capacity heap storing exactly $K$ nodes: $O(K)$ space.
-- Streams through the $M$ candidates:
-  - If heap size $< K$: Insert candidate in $O(\log K)$.
-  - If heap size $== K$: Compare candidate score with the min-heap root (the current $K$-th best score):
-    - If score $\le$ root: Discard immediately in $O(1)$.
-    - If score $>$ root: Replace root and call `heapifyDown()` in $O(\log K)$.
-- **Time Complexity:** $O(M \log K)$ worst-case. In practice, as the score threshold increases, the majority of candidates are rejected in $O(1)$, resulting in near-linear typical runtime.
-- **Auxiliary Space:** Strictly bounded $O(K)$ heap nodes (e.g., exactly 50 nodes $\approx 1.2\ \text{KB}$ regardless of whether $M = 1,000$ or $100,000$).
-
-#### Strategy Comparison & Architectural Selection:
-- **Primary Production Choice:** **Strategy B (Bounded Min-Heap of size $K$)** is selected for the runtime search pipeline because of its deterministic, minimal memory footprint ($O(K)$ space).
-- **Secondary Batch Choice:** Strategy A is supported when batch ranking pre-allocated candidate arrays.
-- **Tie-Breaking Determinism:**
-  1. Higher `score` wins.
-  2. If scores equal: More recent `lastModifiedTime` wins.
-  3. If timestamps equal: Smaller `docId` wins.
+### 3.2 Top-$K$ Heap Selection
+To extract the Top-$K$ results efficiently without sorting all $M$ matching candidates:
+- **Bounded Min-Heap of Size $K$:** Uses `CustomMinHeap` with $O(M \log K)$ worst-case time and $O(K)$ space.
+- **Deterministic Tie-Breaking:**
+  1. Higher relevance score first.
+  2. If scores are equal: Smaller `docId` first.
 
 ---
 

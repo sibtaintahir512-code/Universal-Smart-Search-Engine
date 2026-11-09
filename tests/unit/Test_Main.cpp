@@ -57,6 +57,21 @@ namespace sse::test {
     void runSearchIntegrityTests();
     void runSearchServiceTests();
     void runPhase6BenchmarkTests();
+
+    // Phase 7 Relevance Ranking & Smart Search
+    void runDocumentLengthStatisticsTests();
+    void runTFIDFTests();
+    void runBM25Tests();
+    void runFieldWeightsTests();
+    void runTopKSelectorTests();
+    void runRankingEngineTests();
+    void runRankingDeterminismTests();
+    void runBooleanAwareRankingTests();
+    void runRankingUpdatesTests();
+    void runRankingPaginationTests();
+    void runRankingExplanationTests();
+    void runRankingStatisticsTests();
+    void runPhase7BenchmarkTests();
 }
 
 int main() {
@@ -133,7 +148,23 @@ int main() {
     sse::test::runSearchServiceTests();
     sse::test::runPhase6BenchmarkTests();
 
-    // 7. Print Final Summary
+    // 7. Run Phase 7 Relevance Ranking & Smart Search Test Suites
+    std::cout << "\n--- Executing Phase 7 Relevance Ranking & Smart Search Test Suites ---" << std::endl;
+    sse::test::runDocumentLengthStatisticsTests();
+    sse::test::runTFIDFTests();
+    sse::test::runBM25Tests();
+    sse::test::runFieldWeightsTests();
+    sse::test::runTopKSelectorTests();
+    sse::test::runRankingEngineTests();
+    sse::test::runRankingDeterminismTests();
+    sse::test::runBooleanAwareRankingTests();
+    sse::test::runRankingUpdatesTests();
+    sse::test::runRankingPaginationTests();
+    sse::test::runRankingExplanationTests();
+    sse::test::runRankingStatisticsTests();
+    sse::test::runPhase7BenchmarkTests();
+
+    // 8. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

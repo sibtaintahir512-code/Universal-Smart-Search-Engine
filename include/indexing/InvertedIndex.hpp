@@ -10,6 +10,7 @@
 #include "dsa/CustomPostingList.hpp"
 #include "dsa/CustomTrie.hpp"
 #include "dsa/CustomDynamicArray.hpp"
+#include "ranking/DocumentLengthStatistics.hpp"
 
 namespace sse::indexing {
 
@@ -109,6 +110,12 @@ public:
     const dsa::CustomTrie& trie() const noexcept { return m_trie; }
 
     /**
+     * @brief Access to document length statistics for BM25 and ranking.
+     */
+    const ranking::DocumentLengthStatistics& documentLengthStatistics() const noexcept { return m_lengthStats; }
+    ranking::DocumentLengthStatistics& documentLengthStatistics() noexcept { return m_lengthStats; }
+
+    /**
      * @brief Diagnostic iteration across all indexed terms and their posting lists.
      */
     void forEachTerm(const std::function<void(const std::string& term, const dsa::CustomPostingList& list)>& callback) const;
@@ -117,6 +124,7 @@ private:
     mutable std::shared_mutex                                 m_mutex;
     dsa::CustomHashTable<std::string, dsa::CustomPostingList*> m_table;
     dsa::CustomTrie                                           m_trie;
+    ranking::DocumentLengthStatistics                         m_lengthStats;
     uint64_t                                                  m_totalPostings{0};
 
     void deallocateAllLists() noexcept;

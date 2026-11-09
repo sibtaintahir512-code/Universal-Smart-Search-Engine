@@ -6,6 +6,7 @@
 #include "core/CommonTypes.hpp"
 #include "dsa/CustomDynamicArray.hpp"
 #include "search/SearchResult.hpp"
+#include "ranking/RankingConfig.hpp"
 
 namespace sse::search {
 
@@ -30,6 +31,7 @@ struct SearchResponse {
     std::string                             errorMessage;
     std::size_t                             errorOffset{0};
     SearchStatus                            status{SearchStatus::Success};
+    ranking::RankingMode                    rankingMode{ranking::RankingMode::DocIdOrder};
     std::size_t                             totalMatches{0};
     std::size_t                             returnedCount{0};
     std::size_t                             offset{0};

@@ -45,6 +45,19 @@ add_executable(UnitTestsRunner
     unit/Test_SearchIntegrity.cpp
     unit/Test_SearchService.cpp
     unit/Test_Phase6_Benchmarks.cpp
+    unit/Test_DocumentLengthStatistics.cpp
+    unit/Test_TFIDF.cpp
+    unit/Test_BM25.cpp
+    unit/Test_FieldWeights.cpp
+    unit/Test_TopKSelector.cpp
+    unit/Test_RankingEngine.cpp
+    unit/Test_RankingDeterminism.cpp
+    unit/Test_BooleanAwareRanking.cpp
+    unit/Test_RankingUpdates.cpp
+    unit/Test_RankingPagination.cpp
+    unit/Test_RankingExplanation.cpp
+    unit/Test_RankingStatistics.cpp
+    unit/Test_Phase7_Benchmarks.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE

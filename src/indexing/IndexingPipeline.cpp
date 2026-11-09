@@ -169,6 +169,9 @@ IndexingResult IndexingPipeline::indexDocument(DocID docId, const extraction::Ex
         }
     }
 
+    // Set precise token counts in DocumentLengthStatistics
+    m_index.documentLengthStatistics().recordDocumentLength(docId, nameTokenCount, bodyTokenCount);
+
     // Step 5: Update Catalog Extraction State
     FileMetadata* mutMeta = m_catalog.getMutableMetadata(docId);
     if (mutMeta) {

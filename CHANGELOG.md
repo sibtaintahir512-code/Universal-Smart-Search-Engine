@@ -6,6 +6,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - Phase 7 Complete (November 2026)
+
+### Added
+- **Relevance Ranking Subsystem (`RankingEngine`, `RankingConfig`, `RankingResult`):**
+  - Modular, extensible relevance ranking framework supporting `DocIdOrder`, `TFIDF`, and `BM25` modes.
+  - Mathematical field weighting model prioritizing filename matches ($W_{name}=5.0$) over body matches ($W_{body}=1.0$).
+  - Detailed score explanation breakdown (`ScoreExplanation`, `TermExplanation`) detailing per-term TF, IDF, length normalization, and field scores.
+  - Thread-safe ranking telemetry recording request counts, scoring latencies, and Top-$K$ selection times (`RankingStatistics`).
+- **Mathematical Scorer Implementations (`TFIDFScorer`, `BM25Scorer`):**
+  - BM25-smoothed and conventional smoothed Inverse Document Frequency formulations with numerical safety guards ($DF > N$ and $DF = 0$ handling).
+  - Sublinear term frequency scaling for TF-IDF.
+  - Field-weighted BM25 with independent document length normalization for filename and body tokens, saturation parameter $k_1 = 1.2$, and length penalization $b = 0.75$.
+  - Zero-division guards protecting corpus with zero body lengths ($avgdl = 0$).
+- **Document Length Statistics (`DocumentLengthStatistics`):**
+  - Thread-safe, $O(1)$ tracking of per-document filename and body token counts.
+  - Running corpus totals and dynamic average document length ($avgdl$) computation.
+  - Lifecycle coordination with `InvertedIndex` for incremental accumulation, document removal, and clearing.
+- **Bounded Top-K Selection (`TopKSelector`):**
+  - Priority heap selection using `CustomMinHeap` achieving $O(M \log K)$ selection complexity over $M$ candidates.
+  - Deterministic tie-breaking prioritizing higher score first, and smaller DocID first on score tie.
+- **Boolean-Aware Query Integration:**
+  - Positive query-term extractor visiting AST subtrees while strictly skipping terms under `NOT` operators.
+  - Fallback to neutral DocID ordering for pure negation queries (e.g., `NOT term`).
+- **SearchService End-to-End Integration:**
+  - Ranking mode support, score population, rank position assignment (1-based), and score explanation delivery.
+  - Paged retrieval over heap-selected top results preserving total matching count.
+
+### Changed
+- `InvertedIndex` embeds `DocumentLengthStatistics` to record token lengths during indexing and update totals on document removal.
+- `SearchResultItem` extended with `relevanceScore`, `rankPosition`, and `explanation`.
+- `SearchResponse` extended with `rankingMode`.
+- Total test assertion count increased to 14,098 passing assertions (100% pass rate, 0 failures).
+
+---
+
 ## [0.6.0] - Phase 6 Complete (November 2026)
 
 ### Added

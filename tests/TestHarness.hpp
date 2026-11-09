@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include <cmath>
 
 namespace sse::dsa {
     // Forward declare namespace
@@ -45,6 +46,13 @@ inline void reportTestResult(const char* testName, bool passed, const char* file
     do { \
         bool _res = ((a) != (b)); \
         sse::test::reportTestResult(__func__, _res, __FILE__, __LINE__, #a " != " #b); \
+    } while (0)
+
+#define TEST_ASSERT_NEAR(a, b, eps) \
+    do { \
+        double _diff = std::abs(static_cast<double>(a) - static_cast<double>(b)); \
+        bool _res = (_diff <= static_cast<double>(eps)); \
+        sse::test::reportTestResult(__func__, _res, __FILE__, __LINE__, "|" #a " - " #b "| <= " #eps); \
     } while (0)
 
 #define TEST_ASSERT_THROWS(expr, ExceptionType) \

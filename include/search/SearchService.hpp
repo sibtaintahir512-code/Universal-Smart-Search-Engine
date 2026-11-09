@@ -9,12 +9,13 @@
 #include "search/SearchConfig.hpp"
 #include "search/SearchResponse.hpp"
 #include "search/SearchStatistics.hpp"
+#include "ranking/RankingEngine.hpp"
 
 namespace sse::search {
 
 /**
  * @brief Central facade service orchestrating lexical analysis, parsing,
- * AST evaluation, catalog metadata resolution, and result pagination.
+ * AST evaluation, relevance ranking, catalog metadata resolution, and result pagination.
  */
 class SearchService {
 public:
@@ -51,21 +52,34 @@ public:
     SearchStatistics& statistics() noexcept { return m_statistics; }
 
     /**
+     * @brief Access ranking engine.
+     */
+    const ranking::RankingEngine& rankingEngine() const noexcept { return m_rankingEngine; }
+    ranking::RankingEngine& rankingEngine() noexcept { return m_rankingEngine; }
+
+    /**
      * @brief Resets all telemetry counters.
      */
-    void resetStatistics() noexcept { m_statistics.reset(); }
+    void resetStatistics() noexcept {
+        m_statistics.reset();
+        m_rankingEngine.resetStatistics();
+    }
 
     /**
      * @brief Access current configuration.
      */
     const SearchConfig& config() const noexcept { return m_config; }
-    void setConfig(SearchConfig config) noexcept { m_config = config; }
+    void setConfig(SearchConfig config) noexcept {
+        m_config = config;
+        m_rankingEngine.setConfig(m_config.rankingConfig);
+    }
 
 private:
     const indexing::InvertedIndex*   m_index{nullptr};
     const indexing::DocumentCatalog* m_catalog{nullptr};
     SearchConfig                     m_config;
     SearchStatistics                 m_statistics;
+    ranking::RankingEngine           m_rankingEngine;
 
     static std::string extractExtension(const std::string& filename);
 };
