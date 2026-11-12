@@ -122,7 +122,61 @@ set_project_warnings(SearchEngineCore)
 enable_sanitizers(SearchEngineCore)
 
 # ==============================================================================
-# Target 3: SearchEngineApp (Qt 6 Desktop Executable)
+# Target 3: GuiLib (Qt 6 Desktop GUI Library & Widgets)
+# ==============================================================================
+add_library(GuiLib STATIC
+    include/gui/adapters/SearchEngineAdapter.hpp
+    include/gui/models/SearchResultModel.hpp
+    include/gui/widgets/SearchResultDelegate.hpp
+    include/gui/widgets/SearchBar.hpp
+    include/gui/widgets/FilterPanel.hpp
+    include/gui/widgets/PreviewPanel.hpp
+    include/gui/widgets/MetadataPanel.hpp
+    include/gui/workers/WorkerTypes.hpp
+    include/gui/workers/SearchWorker.hpp
+    include/gui/workers/IndexingWorker.hpp
+    include/gui/workers/PreviewWorker.hpp
+    include/gui/workers/PersistenceWorker.hpp
+    include/gui/dialogs/IndexManagementDialog.hpp
+    include/gui/dialogs/DashboardDialog.hpp
+    include/gui/dialogs/SettingsDialog.hpp
+    include/gui/ThemeManager.hpp
+    include/gui/MainWindow.hpp
+    src/gui/adapters/SearchEngineAdapter.cpp
+    src/gui/models/SearchResultModel.cpp
+    src/gui/widgets/SearchResultDelegate.cpp
+    src/gui/widgets/SearchBar.cpp
+    src/gui/widgets/FilterPanel.cpp
+    src/gui/widgets/PreviewPanel.cpp
+    src/gui/widgets/MetadataPanel.cpp
+    src/gui/workers/SearchWorker.cpp
+    src/gui/workers/IndexingWorker.cpp
+    src/gui/workers/PreviewWorker.cpp
+    src/gui/workers/PersistenceWorker.cpp
+    src/gui/dialogs/IndexManagementDialog.cpp
+    src/gui/dialogs/DashboardDialog.cpp
+    src/gui/dialogs/SettingsDialog.cpp
+    src/gui/ThemeManager.cpp
+    src/gui/MainWindow.cpp
+)
+
+target_include_directories(GuiLib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(GuiLib PUBLIC
+    SearchEngineCore
+    DsaLib
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Gui
+)
+
+set_project_warnings(GuiLib)
+enable_sanitizers(GuiLib)
+
+# ==============================================================================
+# Target 4: SearchEngineApp (Qt 6 Desktop Executable)
 # ==============================================================================
 add_executable(SearchEngineApp
     src/main.cpp
@@ -133,11 +187,7 @@ target_include_directories(SearchEngineApp PRIVATE
 )
 
 target_link_libraries(SearchEngineApp PRIVATE
-    SearchEngineCore
-    DsaLib
-    Qt6::Widgets
-    Qt6::Core
-    Qt6::Gui
+    GuiLib
 )
 
 set_project_warnings(SearchEngineApp)

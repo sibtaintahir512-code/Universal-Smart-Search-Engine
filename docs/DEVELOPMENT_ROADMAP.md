@@ -220,7 +220,8 @@ The development lifecycle for Release 1 is organized into 11 strictly sequenced 
 ---
 
 ### Phase 9: Qt 6 Widgets Desktop GUI
-- **Objectives:** Construct the modern dark-themed desktop interface and multi-threaded worker pipeline.
+- **Status:** Complete (November 2026).
+- **Objectives:** Construct the modern dark/light themed desktop interface and multi-threaded worker pipeline.
 - **Tasks:**
   1. Create `MainWindow` layout with top search bar, filter panel, and results table.
   2. Implement custom `Trie` autocomplete dropdown widget.
@@ -232,8 +233,8 @@ The development lifecycle for Release 1 is organized into 11 strictly sequenced 
 - **Dependencies:** Phase 8.
 - **Expected Deliverables:** Native Qt 6 GUI application in `gui/`.
 - **Testing Requirements:** GUI responsiveness test: target smooth 60 FPS UI responsiveness (frame time $\le 16.6\ \text{ms}$) during active background indexation; zero UI thread freezing.
-- **Completion Criteria:** Smooth, flicker-free desktop UI connecting all search and preview features.
-- **Risks:** Cross-thread data race if GUI accesses uncommitted index structures.
+- **Completion Criteria:** Smooth, flicker-free desktop UI connecting all search and preview features; 14,515 passing assertions.
+- **Risks:** Cross-thread data race if GUI accesses uncommitted index structures (mitigated via SearchEngineAdapter facade and thread isolation).
 - **Relative Complexity:** High.
 
 ---

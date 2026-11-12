@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+#include <QApplication>
 #include "TestHarness.hpp"
 #include "core/CommonTypes.hpp"
 
@@ -85,9 +86,16 @@ namespace sse::test {
     void runIndexCompactionTests();
     void runRoundTripEquivalenceTests();
     void runPhase8Benchmarks();
+
+    // Phase 9 Qt 6 Desktop GUI & Background Workers
+    void runSearchResultModelTests();
+    void runSearchEngineAdapterTests();
+    void runThemeManagerTests();
+    void runSearchWorkerTests();
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
     std::cout << "======================================================================" << std::endl;
     std::cout << " UNIVERSAL SMART SEARCH ENGINE — INTEGRATED TEST SUITE" << std::endl;
     std::cout << "======================================================================" << std::endl;
@@ -191,7 +199,14 @@ int main() {
     sse::test::runRoundTripEquivalenceTests();
     sse::test::runPhase8Benchmarks();
 
-    // 9. Print Final Summary
+    // 9. Run Phase 9 Qt 6 Desktop GUI & Background Worker Test Suites
+    std::cout << "\n--- Executing Phase 9 Qt 6 Desktop GUI & Background Worker Test Suites ---" << std::endl;
+    sse::test::runSearchResultModelTests();
+    sse::test::runSearchEngineAdapterTests();
+    sse::test::runThemeManagerTests();
+    sse::test::runSearchWorkerTests();
+
+    // 10. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

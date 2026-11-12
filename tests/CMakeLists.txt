@@ -69,6 +69,10 @@ add_executable(UnitTestsRunner
     unit/Test_IndexCompaction.cpp
     unit/Test_RoundTripEquivalence.cpp
     unit/Test_Phase8_Benchmarks.cpp
+    unit/Test_SearchResultModel.cpp
+    unit/Test_SearchEngineAdapter.cpp
+    unit/Test_ThemeManager.cpp
+    unit/Test_SearchWorker.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE
@@ -77,8 +81,12 @@ target_include_directories(UnitTestsRunner PRIVATE
 )
 
 target_link_libraries(UnitTestsRunner PRIVATE
+    GuiLib
     SearchEngineCore
     DsaLib
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Gui
 )
 
 set_project_warnings(UnitTestsRunner)
