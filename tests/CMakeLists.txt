@@ -77,6 +77,7 @@ add_executable(UnitTestsRunner
     integration/Test_Integration_IT01_IT04.cpp
     integration/Test_Integration_IT05_IT08.cpp
     integration/Test_Failure_FT01_FT09.cpp
+    integration/Test_EndToEndWorkflow.cpp
     benchmarks/Test_Phase10_Benchmarks.cpp
 )
 

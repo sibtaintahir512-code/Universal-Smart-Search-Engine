@@ -52,8 +52,8 @@
 [BENCHMARK] Executing Phase 5 Inverted Index & Tokenizer Performance Benchmarks...
   --------------------------------------------------------
   Corpus Scale         : 100 documents
-  Total Duration       : 1.32 ms
-  Ingestion Throughput : 75767.1 docs/sec (5796183.5 tokens/sec)
+  Total Duration       : 1.33 ms
+  Ingestion Throughput : 75209.2 docs/sec (5753501.9 tokens/sec)
   Vocabulary Size      : 144 terms (144 in Trie)
   Total Postings Count : 4230 postings
   Tokens Processed     : 7650
@@ -61,8 +61,8 @@
   --------------------------------------------------------
   --------------------------------------------------------
   Corpus Scale         : 1000 documents
-  Total Duration       : 11.99 ms
-  Ingestion Throughput : 83395.0 docs/sec (6379718.3 tokens/sec)
+  Total Duration       : 12.10 ms
+  Ingestion Throughput : 82670.2 docs/sec (6324274.1 tokens/sec)
   Vocabulary Size      : 1044 terms (1044 in Trie)
   Total Postings Count : 42300 postings
   Tokens Processed     : 76500
@@ -70,8 +70,8 @@
   --------------------------------------------------------
   --------------------------------------------------------
   Corpus Scale         : 10000 documents
-  Total Duration       : 118.59 ms
-  Ingestion Throughput : 84324.3 docs/sec (6450808.2 tokens/sec)
+  Total Duration       : 122.45 ms
+  Ingestion Throughput : 81663.0 docs/sec (6247220.5 tokens/sec)
   Vocabulary Size      : 10044 terms (10044 in Trie)
   Total Postings Count : 423000 postings
   Tokens Processed     : 765000
@@ -95,43 +95,43 @@
   Corpus Scale          : 100 documents
   Vocabulary Size       : 105 terms
   Total Postings Count  : 385 postings
-  Query: "common                              " Matches:   100 | Parse:   0.4 µs | Eval:    3.6 µs | Total:   12.3 µs
-  Query: "term50                              " Matches:     1 | Parse:   0.3 µs | Eval:    0.1 µs | Total:    0.6 µs
-  Query: "nonexistent                         " Matches:     0 | Parse:   0.3 µs | Eval:    0.1 µs | Total:    0.4 µs
-  Query: "even AND quarter                    " Matches:    25 | Parse:   0.4 µs | Eval:    3.0 µs | Total:    6.0 µs
-  Query: "even OR quarter                     " Matches:    50 | Parse:   0.4 µs | Eval:    3.8 µs | Total:    9.0 µs
-  Query: "common AND NOT even                 " Matches:    50 | Parse:   0.5 µs | Eval:    8.0 µs | Total:   14.3 µs
-  Query: "(even OR quarter) AND tenth         " Matches:    10 | Parse:   0.7 µs | Eval:    3.2 µs | Total:    4.8 µs
-  Query: "name:docfile AND (even OR quarter)  " Matches:    50 | Parse:   0.7 µs | Eval:    5.9 µs | Total:   12.4 µs
-  Query: "common AND NOT (even OR quarter)    " Matches:    50 | Parse:   0.8 µs | Eval:    8.8 µs | Total:   15.2 µs
+  Query: "common                              " Matches:   100 | Parse:   0.5 µs | Eval:    4.3 µs | Total:   10.7 µs
+  Query: "term50                              " Matches:     1 | Parse:   0.3 µs | Eval:    0.2 µs | Total:    0.6 µs
+  Query: "nonexistent                         " Matches:     0 | Parse:   0.3 µs | Eval:    0.1 µs | Total:    0.3 µs
+  Query: "even AND quarter                    " Matches:    25 | Parse:   0.5 µs | Eval:    2.9 µs | Total:    6.1 µs
+  Query: "even OR quarter                     " Matches:    50 | Parse:   0.4 µs | Eval:    2.9 µs | Total:    9.1 µs
+  Query: "common AND NOT even                 " Matches:    50 | Parse:   0.5 µs | Eval:    9.1 µs | Total:   14.2 µs
+  Query: "(even OR quarter) AND tenth         " Matches:    10 | Parse:   0.6 µs | Eval:    3.2 µs | Total:    5.0 µs
+  Query: "name:docfile AND (even OR quarter)  " Matches:    50 | Parse:   0.6 µs | Eval:    6.0 µs | Total:   12.5 µs
+  Query: "common AND NOT (even OR quarter)    " Matches:    50 | Parse:   0.8 µs | Eval:    8.4 µs | Total:   15.4 µs
   --------------------------------------------------------
   --------------------------------------------------------
   Corpus Scale          : 1000 documents
   Vocabulary Size       : 1005 terms
   Total Postings Count  : 3850 postings
-  Query: "common                              " Matches:  1000 | Parse:   0.3 µs | Eval:   29.8 µs | Total:   30.7 µs
-  Query: "term50                              " Matches:     1 | Parse:   0.2 µs | Eval:    0.1 µs | Total:    0.5 µs
+  Query: "common                              " Matches:  1000 | Parse:   0.3 µs | Eval:   25.9 µs | Total:   30.5 µs
+  Query: "term50                              " Matches:     1 | Parse:   0.2 µs | Eval:    0.1 µs | Total:    0.6 µs
   Query: "nonexistent                         " Matches:     0 | Parse:   0.3 µs | Eval:    0.1 µs | Total:    0.3 µs
-  Query: "even AND quarter                    " Matches:   250 | Parse:   0.4 µs | Eval:   20.0 µs | Total:   28.0 µs
-  Query: "even OR quarter                     " Matches:   500 | Parse:   0.5 µs | Eval:   20.5 µs | Total:   26.2 µs
-  Query: "common AND NOT even                 " Matches:   500 | Parse:   0.5 µs | Eval:   67.7 µs | Total:   69.3 µs
-  Query: "(even OR quarter) AND tenth         " Matches:   100 | Parse:   0.6 µs | Eval:   22.8 µs | Total:   29.1 µs
-  Query: "name:docfile AND (even OR quarter)  " Matches:   500 | Parse:   0.6 µs | Eval:   45.5 µs | Total:   52.0 µs
-  Query: "common AND NOT (even OR quarter)    " Matches:   500 | Parse:   0.8 µs | Eval:   71.1 µs | Total:   75.9 µs
+  Query: "even AND quarter                    " Matches:   250 | Parse:   0.4 µs | Eval:   19.5 µs | Total:   26.2 µs
+  Query: "even OR quarter                     " Matches:   500 | Parse:   0.4 µs | Eval:   19.6 µs | Total:   25.9 µs
+  Query: "common AND NOT even                 " Matches:   500 | Parse:   0.5 µs | Eval:   65.0 µs | Total:   71.3 µs
+  Query: "(even OR quarter) AND tenth         " Matches:   100 | Parse:   0.6 µs | Eval:   23.1 µs | Total:   29.6 µs
+  Query: "name:docfile AND (even OR quarter)  " Matches:   500 | Parse:   0.5 µs | Eval:   44.8 µs | Total:   51.5 µs
+  Query: "common AND NOT (even OR quarter)    " Matches:   500 | Parse:   0.7 µs | Eval:   71.3 µs | Total:   76.6 µs
   --------------------------------------------------------
   --------------------------------------------------------
   Corpus Scale          : 10000 documents
   Vocabulary Size       : 10005 terms
   Total Postings Count  : 38500 postings
-  Query: "common                              " Matches: 10000 | Parse:   0.6 µs | Eval:  234.4 µs | Total:  242.2 µs
-  Query: "term50                              " Matches:     1 | Parse:   0.3 µs | Eval:    0.1 µs | Total:    0.6 µs
-  Query: "nonexistent                         " Matches:     0 | Parse:   0.3 µs | Eval:    0.0 µs | Total:    0.3 µs
-  Query: "even AND quarter                    " Matches:  2500 | Parse:   0.5 µs | Eval:  180.1 µs | Total:  183.6 µs
-  Query: "even OR quarter                     " Matches:  5000 | Parse:   0.4 µs | Eval:  176.3 µs | Total:  183.1 µs
-  Query: "common AND NOT even                 " Matches:  5000 | Parse:   0.6 µs | Eval:  612.0 µs | Total:  618.3 µs
-  Query: "(even OR quarter) AND tenth         " Matches:  1000 | Parse:   0.7 µs | Eval:  201.5 µs | Total:  211.2 µs
-  Query: "name:docfile AND (even OR quarter)  " Matches:  5000 | Parse:   0.7 µs | Eval:  421.3 µs | Total:  426.7 µs
-  Query: "common AND NOT (even OR quarter)    " Matches:  5000 | Parse:   0.8 µs | Eval:  663.2 µs | Total:  671.5 µs
+  Query: "common                              " Matches: 10000 | Parse:   2.0 µs | Eval:  260.0 µs | Total:  262.5 µs
+  Query: "term50                              " Matches:     1 | Parse:   0.5 µs | Eval:    0.5 µs | Total:    0.6 µs
+  Query: "nonexistent                         " Matches:     0 | Parse:   0.3 µs | Eval:    0.2 µs | Total:    0.3 µs
+  Query: "even AND quarter                    " Matches:  2500 | Parse:   0.9 µs | Eval:  195.3 µs | Total:  197.7 µs
+  Query: "even OR quarter                     " Matches:  5000 | Parse:   1.2 µs | Eval:  200.1 µs | Total:  200.0 µs
+  Query: "common AND NOT even                 " Matches:  5000 | Parse:   1.1 µs | Eval:  706.0 µs | Total:  649.5 µs
+  Query: "(even OR quarter) AND tenth         " Matches:  1000 | Parse:   1.5 µs | Eval:  213.8 µs | Total:  216.4 µs
+  Query: "name:docfile AND (even OR quarter)  " Matches:  5000 | Parse:   1.0 µs | Eval:  421.1 µs | Total:  435.8 µs
+  Query: "common AND NOT (even OR quarter)    " Matches:  5000 | Parse:   1.1 µs | Eval:  668.9 µs | Total:  669.2 µs
   --------------------------------------------------------
 
 --- Executing Phase 7 Relevance Ranking & Smart Search Test Suites ---
@@ -150,9 +150,9 @@
 [RUNNING] Phase 7 Relevance Ranking Benchmarks...
   Generating synthetic corpus of 10000 documents...
   [Benchmark] DocIdOrder (10k docs, top 20): 0.2 ms
-  [Benchmark] TF-IDF (10k docs, top 20): 83.4 ms
-  [Benchmark] BM25 (10k docs, top 20): 84.0 ms
-  [Benchmark] BM25 Multi-term 'common AND medium' (1k matches): 10.9 ms
+  [Benchmark] TF-IDF (10k docs, top 20): 86.1 ms
+  [Benchmark] BM25 (10k docs, top 20): 86.1 ms
+  [Benchmark] BM25 Multi-term 'common AND medium' (1k matches): 10.2 ms
 
 --- Executing Phase 8 Binary Index Serialization & Persistence Test Suites ---
 [RUNNING] CRC32 Tests...
@@ -166,12 +166,12 @@
 [RUNNING] IndexCompaction Tests...
 [RUNNING] RoundTripEquivalence Tests...
 [RUNNING] Phase 8 Persistence Performance Benchmarks...
-  [Benchmark] CRC-32 (10 MB buffer): 26.3 ms (380.7 MB/s, CRC=0x2ee34129)
+  [Benchmark] CRC-32 (10 MB buffer): 26.7 ms (374.5 MB/s, CRC=0x2ee34129)
   Generating synthetic corpus of 10000 documents for persistence benchmarks...
-  [Benchmark] Serialization (10k docs): 9.7 ms (1033538.3 docs/s, Size=1176.0 KB)
+  [Benchmark] Serialization (10k docs): 9.8 ms (1018939.5 docs/s, Size=1176.0 KB)
   [Benchmark] Full File Validation (10k docs): 6.0 ms
-  [Benchmark] Deserialization & Reconstruction (10k docs): 9.6 ms (1043714.2 docs/s)
-  [Benchmark] Reference Remapping Compaction (10k docs, 2k tombstones): 3.7 ms
+  [Benchmark] Deserialization & Reconstruction (10k docs): 9.7 ms (1026746.8 docs/s)
+  [Benchmark] Reference Remapping Compaction (10k docs, 2k tombstones): 3.8 ms
 
 --- Executing Phase 9 Qt 6 Desktop GUI & Background Worker Test Suites ---
 
@@ -222,39 +222,64 @@
 [RUNNING FT-09] Memory Allocation Guard & Bounded Limits...
 
 ======================================================================
+ EXECUTING END-TO-END 20-STEP FUNCTIONAL WORKFLOW VERIFICATION
+======================================================================
+
+[DATASET GENERATION] Creating 17 multi-format files in "temp_e2e_dataset"...
+[Step 1] Initializing Search Engine Subsystems...
+[Step 2 & 3] Scanning & Indexing directory: "temp_e2e_dataset"...
+[Step 4] Verifying Discovered Files...
+[Step 5] Verifying Document Metadata & Categories...
+[Step 6] Verifying Multi-Format Content Extraction...
+[Step 7] Verifying Inverted Index Terms...
+[Step 8] Searching by Filename...
+[Step 9] Searching by Body Content...
+[Step 10] Performing Boolean Queries (AND, OR, NOT, Parentheses)...
+[Step 11] Verifying BM25 Relevance Ranking Order...
+[Step 12] Testing Prefix Trie Autocomplete...
+[Step 13] Verifying File Previews...
+[Step 14 & 15] Modifying File & Testing Incremental Synchronization...
+[Step 16] Persisting Index to Disk with CRC-32 Checksum...
+[Step 17] Closing Engine Instance...
+[Step 18 & 19] Restarting Application & Loading Index from Disk...
+[Step 20] Repeating Searches and Validating 100% Result Parity...
+
+ >>> 20-STEP END-TO-END WORKFLOW COMPLETED SUCCESSFULLY! (100% Parity) <<<
+
+======================================================================
  EXECUTING PHASE 10 SYSTEM BENCHMARK SUITE (1k / 10k / 100k Staged)
 ======================================================================
 
 [BENCHMARK] Generating 1,000-file Small Synthetic Corpus...
-  Generated 1000 files (1960 KB) in 92.4 ms
-  1k Ingestion Time: 99.4 ms (10062.3 docs/sec)
+  Generated 1000 files (1960 KB) in 91.6 ms
+  1k Ingestion Time: 108.0 ms (9258.5 docs/sec)
   1k Vocabulary: 6064 terms | Postings: 129716
   1k Single-Word Latency (Median): 0.3 ms (StdDev: 0.0 ms)
   1k 3-Term Boolean Latency (Median): 1.0 ms (StdDev: 0.0 ms)
   1k BM25 Ranking Latency (Median): 0.7 ms (StdDev: 0.0 ms)
-  1k Save Latency (Median): 35.1 ms | Load Latency: 24.2 ms
+  1k Save Latency (Median): 36.1 ms | Load Latency: 25.2 ms
 
 [BENCHMARK] Generating 10,000-file Medium Synthetic Corpus...
-  Generated 10000 files (19201 KB) in 978.9 ms
-  10k Ingestion Time: 1018.9 ms (9814.1 docs/sec)
+  Generated 10000 files (19201 KB) in 945.4 ms
+  10k Ingestion Time: 1079.1 ms (9266.6 docs/sec)
   10k Vocabulary: 15064 terms | Postings: 1298534
-  10k Single-Word Latency (Median): 88.8 ms (StdDev: 0.3 ms)
-  10k 3-Term Boolean Latency (Median): 277.5 ms (StdDev: 3.6 ms)
-  10k BM25 Ranking Latency (Median): 186.0 ms (StdDev: 0.7 ms)
+  10k Single-Word Latency (Median): 91.0 ms (StdDev: 0.3 ms)
+  10k 3-Term Boolean Latency (Median): 287.0 ms (StdDev: 0.7 ms)
+  10k BM25 Ranking Latency (Median): 189.8 ms (StdDev: 0.5 ms)
 
 [BENCHMARK] Executing 100,000-Document Inverted Index & Trie Stress Simulation...
-  100k Posting Construction Time: 14.4 ms
+  100k Posting Construction Time: 15.0 ms
   100k Inverted Index Postings Count: 180000
   Trie Autocomplete Latency (Median): 0.0 ms (StdDev: 0.0 ms)
-  CRC-32 Throughput: 380.2 MB/s (10 MB in 26.3 ms, CRC=0x9f25d262)
+  CRC-32 Throughput: 369.5 MB/s (10 MB in 27.1 ms, CRC=0x9f25d262)
 ======================================================================
 
 ======================================================================
  TEST EXECUTION SUMMARY
 ======================================================================
-  Total Assertions Checked : 15549
-  Assertions Passed        : 15549
+  Total Assertions Checked : 15595
+  Assertions Passed        : 15595
   Assertions Failed        : 0
 
- >>> ALL 15549 ASSERTIONS PASSED SUCCESSFULLY! (0 Failures) <<<
+ >>> ALL 15595 ASSERTIONS PASSED SUCCESSFULLY! (0 Failures) <<<
 ======================================================================

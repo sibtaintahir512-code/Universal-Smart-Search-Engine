@@ -113,6 +113,7 @@ namespace sse::test {
     void runFT08Tests();
     void runFT09Tests();
 
+    void runEndToEndWorkflowTests();
     void runPhase10Benchmarks();
 }
 
@@ -249,6 +250,8 @@ int main(int argc, char* argv[]) {
     sse::test::runFT07Tests();
     sse::test::runFT08Tests();
     sse::test::runFT09Tests();
+
+    sse::test::runEndToEndWorkflowTests();
 
     sse::test::runPhase10Benchmarks();
 
