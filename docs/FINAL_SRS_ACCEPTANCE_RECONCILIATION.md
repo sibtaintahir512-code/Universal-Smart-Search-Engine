@@ -31,7 +31,7 @@ Following final remediation, **14 of 15 Criteria are Verified PASS**, with AC-15
 | **AC-12** | Save/restore index; repair/recovery on corruption | `IndexPersistenceManager`, `CRC32`, `IndexRecoveryManager` | `Test_IndexPersistence.cpp`, `Test_IndexRecovery.cpp` | `IT-06`, `FT-07`, E2E Steps 16–20 (100% parity) | **PASS** |
 | **AC-13** | Content viewer displays text with query term highlighting | `PreviewPanel`, `PreviewWorker` | `Test_SearchWorker.cpp` | E2E Step 13, GUI Preview | **PASS** |
 | **AC-14** | Zero memory leaks detected upon clean exit | Custom DSA RAII, Rule of Five | Full Test Harness | ASan / LSan Audit (0 bytes) | **PASS** |
-| **AC-15** | Code compiles warning-free under MSVC 2022 x64 (C++17) | Root `CMakeLists.txt` (`/W4 /permissive- /utf-8`), `ci/windows-ci.yml` | Strict C++17 compliant on Clang 17 | CI Workflow Configured | **PASS (CI Automated)** |
+| **AC-15** | All code compiles warning-free under MSVC 2022 x64 with C++17 standard enabled. | Root `CMakeLists.txt` (`/W4 /permissive- /utf-8`), `ci/windows-ci.yml` | Strict C++17 compliant on Clang 17; Windows runner blocked by token scope | **BLOCKED (ENVIRONMENT)** |
 
 ---
 
@@ -57,13 +57,14 @@ Following final remediation, **14 of 15 Criteria are Verified PASS**, with AC-15
 #### AC-15: Warning-Free Compilation under MSVC 2022 x64
 - **Original SRS Requirement:** All code compiles warning-free under MSVC 2022 x64 with C++17 standard enabled.
 - **Implementation:** Root `CMakeLists.txt` sets `/std:c++17`, `/W4`, `/permissive-`, and `/utf-8`.
-- **Execution Evidence:** Local host build is clean under Apple Clang 17.0.0. GitHub Actions CI workflow `ci/windows-ci.yml` added targeting `windows-2022`, MSVC v143, Qt 6.6.3, and CMake to execute `UnitTestsRunner.exe`.
-- **Status:** **PASS (CI Automated)**.
+- **Execution Evidence:** Local host build is clean under Apple Clang 17.0.0. GitHub Actions CI configuration `ci/windows-ci.yml` provided. Native execution on GitHub Actions runner is blocked because the active OAuth token lacks the `workflow` scope.
+- **Status:** **BLOCKED (ENVIRONMENT LIMITATION) / NOT NATIVELY VERIFIED**.
 
 ---
 
 ### Final Reconciliation Summary
 - **Total Original Acceptance Criteria:** 15
 - **Verified PASS:** **14 Criteria** (AC-01 through AC-14)
-- **CI Automated Verification:** **1 Criterion** (AC-15)
+- **Blocked by Environment:** **1 Criterion** (AC-15)
 - **Total Assertions Passing:** **15,634 / 15,634** (0 Failures)
+- **Overall Release Gate:** **CONDITIONALLY APPROVED**

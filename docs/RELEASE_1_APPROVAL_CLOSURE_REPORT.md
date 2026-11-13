@@ -15,7 +15,7 @@
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                          FINAL RELEASE DECISION:                             ║
-║                           APPROVED FOR RELEASE                               ║
+║                       CONDITIONALLY APPROVED                                 ║
 ║                                                                              ║
 ║  Host Verification (Apple Clang 17 / macOS 15.3 ARM64): 100% APPROVED        ║
 ║    - 15,634 / 15,634 Integrated Assertions Passed (0 Failures)               ║
@@ -27,9 +27,10 @@
 ║    - 0 Bytes Memory Leaks, 0 Undefined Behavior, 100% Zero-STL Core DSA      ║
 ║    - Standalone macOS .app Bundle Deployed and Runtime Verified              ║
 ║                                                                              ║
-║  Target Platform (MSVC 2022 v143 / Windows 10/11 x64): APPROVED VIA CI      ║
-║    - Automated GitHub Actions CI workflow (ci/windows-ci.yml) ║
+║  Target Platform (MSVC 2022 v143 / Windows 10/11 x64): CONDITIONALLY APPROVED║
+║    - Pre-configured GitHub Actions CI workflow (ci/windows-ci.yml)           ║
 ║    - Strict ISO C++17 compliance verified (/std:c++17 /permissive- /utf-8 /W4)║
+║    - Native verification pending runner execution (blocked by token scope)   ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -95,5 +96,5 @@ windeployqt .\build\Release\SearchEngineApp.exe
 
 ### Section 4: Final Sign-off & Release Verdict
 
-**APPROVED FOR RELEASE.**  
-All 15 criteria are satisfied (14 Verified PASS, AC-15 CI Automated), 100% Zero-STL in core retrieval structures, 0 memory leaks, 15,634 assertions passing, and all 8 benchmark targets decisively beaten.
+**CONDITIONALLY APPROVED.**  
+14 of 15 criteria are verified PASS, 100% Zero-STL in core retrieval structures, 0 memory leaks, 15,634 assertions passing, and all 8 benchmark targets decisively beaten. AC-15 (Windows MSVC native execution) is fully pre-configured in `ci/windows-ci.yml` and awaits triggering on a native Windows runner or granting `workflow` OAuth scope.
