@@ -110,6 +110,11 @@ public:
     std::size_t nodeCount() const noexcept { return m_nodeCount; }
 
     /**
+     * @brief Returns pointer to the root node of the Trie (read-only traversal).
+     */
+    const TrieNode* root() const noexcept { return m_root; }
+
+    /**
      * @brief Returns true if Trie contains no words.
      */
     bool empty() const noexcept { return m_wordCount == 0; }

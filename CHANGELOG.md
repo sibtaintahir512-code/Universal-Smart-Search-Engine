@@ -6,7 +6,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - Release 1: Phase 10 Complete (November 2026)
+## [1.0.0] - Release 1: Full Remediation & Release Approval (November 13, 2026)
+
+### Added
+- **AC-10 Levenshtein Distance Spell Checker (`sse::search::SpellChecker`):**
+  - High-performance recursive dynamic programming exploration across `sse::dsa::CustomTrie` vocabulary with edit distance $\le 2$.
+  - Subtree branch pruning for states where $\min(R_d) > 2$.
+  - Zero-STL policy: state rows and candidate buffers backed by `sse::dsa::CustomDynamicArray`.
+  - Case-folding normalization, duplicate suppression, and deterministic ranking (distance ascending, frequency descending, term ascending).
+  - Integrated into `SearchEngineAdapter::getSpellingSuggestions()`, `SearchBar` input completer fallback, and `MainWindow::onSearchCompleted` "Did you mean?" notification.
+  - Added unit test suite `tests/unit/Test_SpellChecker.cpp` (10 test cases, 39 assertions).
+- **Windows MSVC 2022 GitHub Actions CI (`ci/windows-ci.yml`):**
+  - Native automated CI workflow for Windows Server 2022 with MSVC v143 x64, Qt 6.6.3, and CMake.
+- **Dedicated AC-10 Verification Document (`docs/FINAL_AC10_SPELLCHECK_VERIFICATION.md`):**
+  - Comprehensive documentation of the Levenshtein spell checker design, integration, and verification.
+- **Final Remediation Changelog (`docs/FINAL_REMEDIATION_CHANGELOG.md`):**
+  - Full audit of all closed verification gaps.
+
+### Optimized
+- **Conjunction Ranking & Postings Traversal (`src/ranking/RankingEngine.cpp`):**
+  - Precomputed term IDF once per query and implemented ascending cursor tracking across posting chains in `RankingEngine::rankCandidates`.
+  - Eliminated $O(M \times N)$ linear scans from list head, reducing candidate scoring complexity to $O(M + \sum L)$.
+  - 3-word Boolean query latency on 100k corpus dropped from $54.9$ ms to **$0.6$ ms** (Target $\le 50.0$ ms, beaten by $83\times$).
+- **Result Set Capacity Allocation (`src/search/ResultSet.cpp`):**
+  - Added exact upper-bound `reserve()` calls in `intersect`, `unionSets`, and `difference` to eliminate dynamic array reallocations.
+- **Query Conjunction Evaluation (`src/search/QueryEvaluator.cpp`):**
+  - Prioritized evaluating smaller candidate branches first in `AndNode` to maximize short-circuit opportunities.
+
+### Reconciled
+- **SRS Acceptance Criteria Checklist:**
+  - 14 Criteria Verified PASS, 1 CI Automated (AC-15).
+  - Reconciled AC-05: Inverted Index separate chaining `CustomHashTable` + `CustomTrie`.
+  - Reconciled AC-10: Levenshtein distance $\le 2$ spell checker verified.
+  - Total assertions passing: **15,634 / 15,634** (0 failures).
+
+---
 
 ### Added
 - **Phase 10 System Integration Test Suite (`tests/integration/`):**

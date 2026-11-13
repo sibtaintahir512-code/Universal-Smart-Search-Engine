@@ -71,6 +71,7 @@ namespace sse::test {
     void runRankingUpdatesTests();
     void runRankingPaginationTests();
     void runRankingExplanationTests();
+    void runSpellCheckerTests();
     void runRankingStatisticsTests();
     void runPhase7BenchmarkTests();
 
@@ -205,6 +206,7 @@ int main(int argc, char* argv[]) {
     sse::test::runRankingUpdatesTests();
     sse::test::runRankingPaginationTests();
     sse::test::runRankingExplanationTests();
+    sse::test::runSpellCheckerTests();
     sse::test::runRankingStatisticsTests();
     sse::test::runPhase7BenchmarkTests();
 

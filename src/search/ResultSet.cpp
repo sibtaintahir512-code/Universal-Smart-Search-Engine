@@ -65,6 +65,8 @@ ResultSet ResultSet::intersect(const ResultSet& a, const ResultSet& b) {
         return result;
     }
 
+    result.m_docIds.reserve(std::min(a.size(), b.size()));
+
     std::size_t i = 0;
     std::size_t j = 0;
     const std::size_t sizeA = a.size();
@@ -90,6 +92,8 @@ ResultSet ResultSet::intersect(const ResultSet& a, const ResultSet& b) {
 
 ResultSet ResultSet::unionSets(const ResultSet& a, const ResultSet& b) {
     ResultSet result;
+    result.m_docIds.reserve(a.size() + b.size());
+
     std::size_t i = 0;
     std::size_t j = 0;
     const std::size_t sizeA = a.size();
@@ -133,6 +137,8 @@ ResultSet ResultSet::difference(const ResultSet& universe, const ResultSet& excl
     if (exclude.empty()) {
         return universe;
     }
+
+    result.m_docIds.reserve(universe.size());
 
     std::size_t i = 0;
     std::size_t j = 0;

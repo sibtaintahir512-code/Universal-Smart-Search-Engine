@@ -60,20 +60,36 @@ ResultSet QueryEvaluator::evaluateNode(const QueryNode* node,
 
         case QueryNodeType::And: {
             const auto* andNode = static_cast<const AndNode*>(node);
-            ResultSet left = evaluateNode(andNode->left.get(), cancelToken, diag, cancelled);
+            const QueryNode* firstChild = andNode->left.get();
+            const QueryNode* secondChild = andNode->right.get();
+
+            if (andNode->right && andNode->right->type() == QueryNodeType::Term) {
+                const auto* rightTerm = static_cast<const TermNode*>(andNode->right.get());
+                uint32_t rightDf = m_index->getDocumentFrequency(rightTerm->term);
+                uint32_t leftDf = 0xFFFFFFFF;
+                if (andNode->left && andNode->left->type() == QueryNodeType::Term) {
+                    leftDf = m_index->getDocumentFrequency(static_cast<const TermNode*>(andNode->left.get())->term);
+                }
+                if (rightDf < leftDf) {
+                    firstChild = andNode->right.get();
+                    secondChild = andNode->left.get();
+                }
+            }
+
+            ResultSet first = evaluateNode(firstChild, cancelToken, diag, cancelled);
             if (cancelled) return ResultSet{};
 
             // Short-circuit: empty intersection is always empty
-            if (left.empty()) {
+            if (first.empty()) {
                 ++diag.booleanOperationsEvaluated;
                 return ResultSet{};
             }
 
-            ResultSet right = evaluateNode(andNode->right.get(), cancelToken, diag, cancelled);
+            ResultSet second = evaluateNode(secondChild, cancelToken, diag, cancelled);
             if (cancelled) return ResultSet{};
 
             ++diag.booleanOperationsEvaluated;
-            return ResultSet::intersect(left, right);
+            return ResultSet::intersect(first, second);
         }
 
         case QueryNodeType::Or: {
@@ -115,6 +131,8 @@ ResultSet QueryEvaluator::evaluateTerm(const TermNode* termNode,
     if (!postList || postList->empty()) {
         return result;
     }
+
+    result.mutableDocIds().reserve(postList->size());
 
     const PostingNode* curr = postList->head();
     while (curr) {

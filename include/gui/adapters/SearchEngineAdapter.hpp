@@ -72,6 +72,10 @@ public:
     std::vector<std::string> getAutocompleteSuggestions(const std::string& prefix,
                                                          std::size_t maxSuggestions = 5) const;
 
+    std::vector<std::string> getSpellingSuggestions(const std::string& term,
+                                                    std::size_t maxDistance = 2,
+                                                    std::size_t maxSuggestions = 5) const;
+
     // =========================================================================
     // Content & Preview Extraction
     // =========================================================================

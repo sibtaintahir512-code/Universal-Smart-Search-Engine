@@ -124,24 +124,137 @@ dsa::CustomDynamicArray<ScoredDocument> RankingEngine::rankCandidates(
         totalDocs = m_catalog->totalCount();
     }
 
+    struct TermScoringContext {
+        const ScoringTerm* term{nullptr};
+        const dsa::CustomPostingList* postList{nullptr};
+        const PostingNode* cursor{nullptr};
+        double idf{0.0};
+        uint32_t df{0};
+    };
+
+    dsa::CustomDynamicArray<TermScoringContext> termContexts;
+    termContexts.reserve(positiveTerms.size());
+
+    const bool useBM25 = (m_config.mode == RankingMode::BM25 && m_lengthStats != nullptr);
+    const double avgNameLen = m_lengthStats ? m_lengthStats->averageNameLength() : 0.0;
+    const double avgBodyLen = m_lengthStats ? m_lengthStats->averageBodyLength() : 0.0;
+
+    for (std::size_t t = 0; t < positiveTerms.size(); ++t) {
+        TermScoringContext ctx;
+        ctx.term = &positiveTerms[t];
+        ctx.postList = m_index->getPostingList(positiveTerms[t].term);
+        if (ctx.postList) {
+            ctx.cursor = ctx.postList->head();
+            ctx.df = ctx.postList->documentFrequency();
+            ctx.idf = TFIDFScorer::computeBM25SmoothedIdf(totalDocs, ctx.df);
+        }
+        termContexts.push_back(ctx);
+    }
+
     for (std::size_t i = 0; i < candidates.size(); ++i) {
         DocID id = candidates[i];
         std::shared_ptr<ScoreExplanation> expl = nullptr;
         if (m_config.enableExplanation) {
             expl = std::make_shared<ScoreExplanation>();
+            expl->docId = id;
+            expl->mode = m_config.mode;
+            expl->filenameWeight = m_config.filenameWeight;
+            expl->bodyWeight = m_config.bodyWeight;
+            if (useBM25 && m_lengthStats) {
+                expl->documentNameLength = m_lengthStats->getNameLength(id);
+                expl->documentBodyLength = m_lengthStats->getBodyLength(id);
+                expl->averageNameLength = avgNameLen;
+                expl->averageBodyLength = avgBodyLen;
+            }
+            expl->termDetails.clear();
         }
 
         double score = 0.0;
-        if (m_config.mode == RankingMode::TFIDF) {
-            score = TFIDFScorer::scoreDocument(id, positiveTerms, *m_index, totalDocs, m_config, expl.get());
-        } else if (m_config.mode == RankingMode::BM25) {
-            if (m_lengthStats) {
-                score = BM25Scorer::scoreDocument(id, positiveTerms, *m_index, *m_lengthStats,
-                                                  totalDocs, m_config, expl.get());
-            } else {
-                // Fallback to TF-IDF if length statistics are unavailable
-                score = TFIDFScorer::scoreDocument(id, positiveTerms, *m_index, totalDocs, m_config, expl.get());
+        double filenameContrib = 0.0;
+        double bodyContrib = 0.0;
+
+        const double nameLen = (useBM25 && m_lengthStats) ? static_cast<double>(m_lengthStats->getNameLength(id)) : 0.0;
+        const double bodyLen = (useBM25 && m_lengthStats) ? static_cast<double>(m_lengthStats->getBodyLength(id)) : 0.0;
+
+        for (std::size_t t = 0; t < termContexts.size(); ++t) {
+            auto& ctx = termContexts[t];
+            if (!ctx.postList || ctx.idf <= 0.0) continue;
+
+            // Fast forward cursor progression
+            while (ctx.cursor && ctx.cursor->docId < id) {
+                ctx.cursor = ctx.cursor->next;
             }
+
+            const PostingNode* node = nullptr;
+            if (ctx.cursor && ctx.cursor->docId == id) {
+                node = ctx.cursor;
+            } else if (i > 0 && id < candidates[i - 1]) {
+                // Fallback in case candidate order is non-monotonic
+                node = ctx.postList->findNode(id);
+            }
+
+            if (!node) continue;
+
+            uint16_t nameTf = node->nameTermFreq;
+            uint16_t bodyTf = node->bodyTermFreq;
+            double termNameScore = 0.0;
+            double termBodyScore = 0.0;
+
+            if (useBM25) {
+                if (ctx.term->field == search::FieldQualifier::Filename) {
+                    double raw = BM25Scorer::computeTermScore(nameTf, ctx.idf, nameLen, avgNameLen, m_config.bm25K1, m_config.bm25B);
+                    termNameScore = m_config.filenameWeight * raw * ctx.term->weight;
+                } else if (ctx.term->field == search::FieldQualifier::Body) {
+                    double raw = BM25Scorer::computeTermScore(bodyTf, ctx.idf, bodyLen, avgBodyLen, m_config.bm25K1, m_config.bm25B);
+                    termBodyScore = m_config.bodyWeight * raw * ctx.term->weight;
+                } else {
+                    double rawN = BM25Scorer::computeTermScore(nameTf, ctx.idf, nameLen, avgNameLen, m_config.bm25K1, m_config.bm25B);
+                    double rawB = BM25Scorer::computeTermScore(bodyTf, ctx.idf, bodyLen, avgBodyLen, m_config.bm25K1, m_config.bm25B);
+                    termNameScore = m_config.filenameWeight * rawN * ctx.term->weight;
+                    termBodyScore = m_config.bodyWeight * rawB * ctx.term->weight;
+                }
+            } else {
+                double sublinearBodyTf = (bodyTf > 0) ? (1.0 + std::log(static_cast<double>(bodyTf))) : 0.0;
+                double nameVal = static_cast<double>(nameTf);
+
+                if (ctx.term->field == search::FieldQualifier::Filename) {
+                    termNameScore = m_config.filenameWeight * nameVal * ctx.idf * ctx.term->weight;
+                } else if (ctx.term->field == search::FieldQualifier::Body) {
+                    termBodyScore = m_config.bodyWeight * sublinearBodyTf * ctx.idf * ctx.term->weight;
+                } else {
+                    termNameScore = m_config.filenameWeight * nameVal * ctx.idf * ctx.term->weight;
+                    termBodyScore = m_config.bodyWeight * sublinearBodyTf * ctx.idf * ctx.term->weight;
+                }
+            }
+
+            double termTotal = termNameScore + termBodyScore;
+            score += termTotal;
+            filenameContrib += termNameScore;
+            bodyContrib += termBodyScore;
+
+            if (expl) {
+                TermExplanation tExp;
+                tExp.term = ctx.term->term;
+                tExp.field = ctx.term->field;
+                tExp.df = ctx.df;
+                tExp.idf = ctx.idf;
+                tExp.nameTf = nameTf;
+                tExp.bodyTf = bodyTf;
+                tExp.nameScore = termNameScore;
+                tExp.bodyScore = termBodyScore;
+                tExp.totalTermScore = termTotal;
+                expl->termDetails.push_back(std::move(tExp));
+            }
+        }
+
+        if (!std::isfinite(score) || score < 0.0) {
+            score = 0.0;
+        }
+
+        if (expl) {
+            expl->finalScore = score;
+            expl->filenameContribution = filenameContrib;
+            expl->bodyContribution = bodyContrib;
         }
 
         scoredCandidates.push_back(ScoredDocument(id, score, 0, std::move(expl)));

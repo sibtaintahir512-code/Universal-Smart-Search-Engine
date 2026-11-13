@@ -1,0 +1,52 @@
+name: Windows MSVC 2022 CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Windows 10/11 x64 (MSVC 2022 v143)
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Qt 6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          modules: 'qtbase qtsvg'
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_PREFIX_PATH="$env:Qt6_DIR"
+
+      - name: Build All Targets
+        run: |
+          cmake --build build --config Release --parallel 4
+
+      - name: Execute Integrated Unit & System Tests
+        run: |
+          cd build/tests/Release
+          .\UnitTestsRunner.exe --benchmarks
+
+      - name: Execute CTest Suite
+        run: |
+          ctest --test-dir build -C Release --output-on-failure

@@ -44,6 +44,7 @@ add_executable(UnitTestsRunner
     unit/Test_SearchCancellation.cpp
     unit/Test_SearchIntegrity.cpp
     unit/Test_SearchService.cpp
+    unit/Test_SpellChecker.cpp
     unit/Test_Phase6_Benchmarks.cpp
     unit/Test_DocumentLengthStatistics.cpp
     unit/Test_TFIDF.cpp

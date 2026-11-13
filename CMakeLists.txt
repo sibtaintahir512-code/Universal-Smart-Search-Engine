@@ -77,6 +77,7 @@ add_library(SearchEngineCore STATIC
     src/search/SearchStatistics.cpp
     src/search/SearchService.cpp
     src/search/SearchIntegrityChecker.cpp
+    src/search/SpellChecker.cpp
     src/ranking/DocumentLengthStatistics.cpp
     src/ranking/TFIDFScorer.cpp
     src/ranking/BM25Scorer.cpp

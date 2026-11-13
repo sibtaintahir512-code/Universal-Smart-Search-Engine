@@ -87,6 +87,9 @@ void SearchBar::onTextChanged(const QString& text) {
             // Ignore Boolean operator prefixes
             if (lastToken.toUpper() != "AND" && lastToken.toUpper() != "OR" && lastToken.toUpper() != "NOT") {
                 auto suggestions = m_adapter->getAutocompleteSuggestions(lastToken.toStdString(), 6);
+                if (suggestions.empty() && lastToken.length() >= 3) {
+                    suggestions = m_adapter->getSpellingSuggestions(lastToken.toStdString(), 2, 5);
+                }
                 QStringList qSuggestions;
                 for (const auto& s : suggestions) {
                     qSuggestions.append(QString::fromStdString(s));

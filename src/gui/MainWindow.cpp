@@ -323,10 +323,23 @@ void MainWindow::onSearchCompleted(const sse::search::SearchResponse& response) 
     m_resultModel->setSearchResponse(response);
 
     if (response.status == search::SearchStatus::Success) {
-        m_summaryLabel->setText(QString("Found %1 results in %2 ms for \"%3\"")
-                                    .arg(response.totalMatches)
-                                    .arg(QString::number(response.executionTimeMs, 'f', 2))
-                                    .arg(QString::fromStdString(response.query)));
+        if (response.totalMatches == 0 && m_adapter) {
+            auto spellSuggs = m_adapter->getSpellingSuggestions(response.query, 2, 3);
+            if (!spellSuggs.empty()) {
+                m_summaryLabel->setText(QString("No matches found for \"%1\". Did you mean: <b>%2</b>?")
+                                            .arg(QString::fromStdString(response.query))
+                                            .arg(QString::fromStdString(spellSuggs[0])));
+            } else {
+                m_summaryLabel->setText(QString("Found 0 results in %1 ms for \"%2\"")
+                                            .arg(QString::number(response.executionTimeMs, 'f', 2))
+                                            .arg(QString::fromStdString(response.query)));
+            }
+        } else {
+            m_summaryLabel->setText(QString("Found %1 results in %2 ms for \"%3\"")
+                                        .arg(response.totalMatches)
+                                        .arg(QString::number(response.executionTimeMs, 'f', 2))
+                                        .arg(QString::fromStdString(response.query)));
+        }
     } else if (response.status == search::SearchStatus::SyntaxError) {
         m_summaryLabel->setText(QString("Syntax Error: %1").arg(QString::fromStdString(response.errorMessage)));
     } else if (response.status == search::SearchStatus::EmptyQuery) {

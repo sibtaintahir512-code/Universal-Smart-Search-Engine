@@ -1,4 +1,5 @@
 #include "gui/adapters/SearchEngineAdapter.hpp"
+#include "search/SpellChecker.hpp"
 #include <algorithm>
 #include <cctype>
 
@@ -75,6 +76,25 @@ std::vector<std::string> SearchEngineAdapter::getAutocompleteSuggestions(const s
     results.reserve(suggestions.size());
     for (std::size_t i = 0; i < suggestions.size(); ++i) {
         results.push_back(suggestions[i].term);
+    }
+    return results;
+}
+
+std::vector<std::string> SearchEngineAdapter::getSpellingSuggestions(const std::string& term,
+                                                                     std::size_t maxDistance,
+                                                                     std::size_t maxSuggestions) const {
+    std::vector<std::string> results;
+    if (term.empty()) {
+        return results;
+    }
+
+    std::shared_lock<std::shared_mutex> lock(m_adapterMutex);
+    search::SpellChecker checker(&m_index.trie());
+    auto suggestions = checker.suggest(term, maxDistance, maxSuggestions);
+
+    results.reserve(suggestions.size());
+    for (std::size_t i = 0; i < suggestions.size(); ++i) {
+        results.push_back(suggestions[i]);
     }
     return results;
 }

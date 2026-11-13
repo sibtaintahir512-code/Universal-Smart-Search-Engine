@@ -5,9 +5,9 @@
 [![Compiler](https://img.shields.io/badge/Compiler-MSVC%202022%20x64-brightgreen.svg)](https://visualstudio.microsoft.com/)
 [![Framework](https://img.shields.io/badge/UI-Qt%206%20Widgets-green.svg)](https://www.qt.io/)
 [![Build](https://img.shields.io/badge/Build-CMake%203.20%2B-orange.svg)](https://cmake.org/)
-[![Status](https://img.shields.io/badge/Release%201-Phase%2010%20Complete-success.svg)](DEVELOPMENT_STATUS.md)
-[![Tests](https://img.shields.io/badge/Tests-15549%20Passed%20(100%25)-brightgreen.svg)](tests/results/phase10/full_test_log.txt)
-[![Verdict](https://img.shields.io/badge/Verdict-Conditionally%20Approved-yellow.svg)](docs/PHASE_10_FINAL_QA_REPORT.md)
+[![Status](https://img.shields.io/badge/Release%201-Approved%20for%20Release-success.svg)](docs/RELEASE_1_APPROVAL_CLOSURE_REPORT.md)
+[![Tests](https://img.shields.io/badge/Tests-15634%20Passed%20(100%25)-brightgreen.svg)](docs/FINAL_TEST_SUITE_AUDIT.md)
+[![Verdict](https://img.shields.io/badge/Verdict-Approved%20for%20Release-brightgreen.svg)](docs/RELEASE_1_APPROVAL_CLOSURE_REPORT.md)
 
 A high-performance native desktop file search engine built from the ground up in modern **C++17** and **Qt 6 Widgets**. 
 
