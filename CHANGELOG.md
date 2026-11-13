@@ -6,6 +6,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - Release 1: Phase 10 Complete (November 2026)
+
+### Added
+- **Phase 10 System Integration Test Suite (`tests/integration/`):**
+  - `Test_Integration_IT01_IT04.cpp`: Subsystem boundaries IT-01 through IT-04 (Scanner + Catalog, Extractor + Tokenizer, Tokenizer + Inverted Index, QueryParser + Boolean Evaluator).
+  - `Test_Integration_IT05_IT08.cpp`: Subsystem boundaries IT-05 through IT-08 (RankingEngine + CustomMinHeap Top-K selection, IndexPersistenceManager round-trip equivalence, SearchEngineAdapter + Qt GUI model binding, and DocumentCatalog + InvertedIndex tombstone compaction).
+  - 160 integration test assertions passing with 100% success rate.
+- **Phase 10 Failure & Edge-Case Test Suite (`tests/integration/Test_Failure_FT01_FT09.cpp`):**
+  - FT-01 to FT-09 covering non-existent directories, permission denied, corrupt PDFs, oversized files, exclusive locks, unbalanced query parentheses syntax errors, CRC-32 corrupted file recovery from `.bak`, deleted file tombstoning, and bounded query allocation safety guards.
+  - 36 failure assertions passing with zero unhandled exceptions.
+- **Synthetic Corpus Generator Subsystem (`tests/benchmarks/SyntheticCorpusGenerator.hpp`, `.cpp`):**
+  - Deterministic pseudo-random generation of multi-category document corpora at 1,000, 10,000, and 100,000 staged document scales with Zipfian vocabulary distribution.
+- **Comprehensive 20-Metric Benchmark Harness (`tests/benchmarks/Test_Phase10_Benchmarks.cpp`):**
+  - Outlier-rejected statistical profiling over 5 repetitions measuring cold/warm search latencies, Trie autocomplete, indexing throughput, persistence I/O, and compaction speed.
+- **Documentation Deliverables in `docs/`:**
+  - `docs/PHASE_10_PREFLIGHT_REPORT.md`: Pre-flight readiness and defect baseline.
+  - `docs/PHASE_10_INTEGRATION_TEST_REPORT.md`: Authoritative IT-01 to IT-08 audit report.
+  - `docs/PHASE_10_FAILURE_TEST_REPORT.md`: Authoritative FT-01 to FT-09 failure recovery report.
+  - `docs/PHASE_10_BENCHMARK_REPORT.md`: 1k/10k/100k staged benchmark measurements and 20-metric summary.
+  - `docs/PHASE_10_MEMORY_SAFETY_REPORT.md`: ASan/LSan/UBSan memory safety, type alignment, and leak audit report.
+  - `docs/PHASE_10_DSA_COMPLIANCE_AUDIT.md`: Static zero-STL compliance audit report.
+  - `docs/PHASE_10_ACCEPTANCE_CRITERIA_MATRIX.md`: Verification of all 15 acceptance criteria (AC-01 to AC-15).
+  - `docs/PHASE_10_FINAL_QA_REPORT.md`: Capstone QA and release report across 24 standard sections.
+  - `docs/USER_MANUAL.md`: Complete end-user guide covering UI, search syntax, ranking, and persistence.
+  - `docs/ACADEMIC_DEMONSTRATION_SCRIPT.md`: 10-step evaluation script for coursework evaluators.
+
+### Fixed
+- **`FileScanner::scan()` DocID propagation:** Updated `FileScanner` to capture the returned `DocID` from `catalog.registerDocument(...)` and assign it directly into `record.metadata.docId`.
+- **`SearchService` RankingConfig initialization:** Ensured `SearchConfig.rankingConfig` is correctly propagated to `RankingEngine` during service initialization in `runIT05Tests`.
+- **`CustomHashTable` compiler warning:** Added explicit `static_cast<unsigned char>` in character hashing loop to eliminate `-Wsign-conversion` under Clang.
+
+### Changed
+- **Total Test Suite Assertions:** Expanded from 14,515 to **15,549 assertions**, achieving a **100% pass rate (0 failures)**.
+- **Release Verdict:** Declared **CONDITIONALLY APPROVED** pending native Windows 10/11 x64 MSVC v143 CI execution.
+- **Release Lock:** Release 1 codebase is officially locked against further feature expansion.
+
+---
+
 ## [0.9.0] - Phase 9 Complete (November 2026)
 
 ### Added

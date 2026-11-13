@@ -5,7 +5,9 @@
 [![Compiler](https://img.shields.io/badge/Compiler-MSVC%202022%20x64-brightgreen.svg)](https://visualstudio.microsoft.com/)
 [![Framework](https://img.shields.io/badge/UI-Qt%206%20Widgets-green.svg)](https://www.qt.io/)
 [![Build](https://img.shields.io/badge/Build-CMake%203.20%2B-orange.svg)](https://cmake.org/)
-[![Status](https://img.shields.io/badge/Phase-Phase%207%20Complete-success.svg)](DEVELOPMENT_STATUS.md)
+[![Status](https://img.shields.io/badge/Release%201-Phase%2010%20Complete-success.svg)](DEVELOPMENT_STATUS.md)
+[![Tests](https://img.shields.io/badge/Tests-15549%20Passed%20(100%25)-brightgreen.svg)](tests/results/phase10/full_test_log.txt)
+[![Verdict](https://img.shields.io/badge/Verdict-Conditionally%20Approved-yellow.svg)](docs/PHASE_10_FINAL_QA_REPORT.md)
 
 A high-performance native desktop file search engine built from the ground up in modern **C++17** and **Qt 6 Widgets**. 
 
@@ -82,20 +84,22 @@ windeployqt build\Debug\SearchEngineApp.exe
 
 Comprehensive engineering documents are located in [`docs/`](docs/):
 
-1. [`docs/SRS.md`](docs/SRS.md) — Software Requirements Specification
-2. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Software Architecture Specification
-3. [`docs/DSA_DESIGN.md`](docs/DSA_DESIGN.md) — Custom Data Structures & Algorithms Design
-4. [`docs/FILE_INDEXING_ARCHITECTURE.md`](docs/FILE_INDEXING_ARCHITECTURE.md) — Indexing Subsystem Design
-5. [`docs/SEARCH_ENGINE_DESIGN.md`](docs/SEARCH_ENGINE_DESIGN.md) — Search Pipeline & Ranking Design
-6. [`docs/PERSISTENCE_DESIGN.md`](docs/PERSISTENCE_DESIGN.md) — Persistence & Binary Serialization
-7. [`docs/GUI_DESIGN.md`](docs/GUI_DESIGN.md) — Qt 6 Widgets GUI Design
-8. [`docs/MODULE_INTERFACES.md`](docs/MODULE_INTERFACES.md) — Module Contracts & Class Interfaces
-9. [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md) — QA & Testing Strategy
-10. [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) — Repository Layout Specification
-11. [`docs/DEVELOPMENT_ROADMAP.md`](docs/DEVELOPMENT_ROADMAP.md) — Implementation Roadmap (Phases 0–10)
+1. [**`docs/USER_MANUAL.md`**](docs/USER_MANUAL.md) — Complete End-User Operator Guide
+2. [**`docs/ACADEMIC_DEMONSTRATION_SCRIPT.md`**](docs/ACADEMIC_DEMONSTRATION_SCRIPT.md) — 10-Step Academic Evaluation Protocol
+3. [**`docs/PHASE_10_FINAL_QA_REPORT.md`**](docs/PHASE_10_FINAL_QA_REPORT.md) — Phase 10 Capstone Quality Assurance & Release Verdict
+4. [**`docs/PHASE_10_INTEGRATION_TEST_REPORT.md`**](docs/PHASE_10_INTEGRATION_TEST_REPORT.md) — Integration Testing Results (IT-01 to IT-08)
+5. [**`docs/PHASE_10_FAILURE_TEST_REPORT.md`**](docs/PHASE_10_FAILURE_TEST_REPORT.md) — Failure & Adversarial Testing Results (FT-01 to FT-09)
+6. [**`docs/PHASE_10_BENCHMARK_REPORT.md`**](docs/PHASE_10_BENCHMARK_REPORT.md) — 1k/10k/100k Benchmark Measurements & 20-Metric Profile
+7. [**`docs/PHASE_10_MEMORY_SAFETY_REPORT.md`**](docs/PHASE_10_MEMORY_SAFETY_REPORT.md) — ASan/UBSan & Memory Alignment Audit
+8. [**`docs/PHASE_10_DSA_COMPLIANCE_AUDIT.md`**](docs/PHASE_10_DSA_COMPLIANCE_AUDIT.md) — Zero-STL Verification Audit
+9. [**`docs/PHASE_10_ACCEPTANCE_CRITERIA_MATRIX.md`**](docs/PHASE_10_ACCEPTANCE_CRITERIA_MATRIX.md) — Acceptance Criteria Matrix (AC-01 to AC-15)
+10. [`docs/SRS.md`](docs/SRS.md) — Software Requirements Specification
+11. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Software Architecture Specification
+12. [`docs/DSA_DESIGN.md`](docs/DSA_DESIGN.md) — Custom Data Structures & Algorithms Design
+13. [`docs/DEVELOPMENT_ROADMAP.md`](docs/DEVELOPMENT_ROADMAP.md) — Implementation Roadmap (Phases 0–10)
 
 ---
 
 ## Current Status
 
-Phase 5 (Inverted Index & Tokenizer Pipeline) is complete with 13,040/13,040 assertions passing and ingestion throughput $>20,000$ docs/sec. The system is awaiting formal review before Phase 6 (Search & Boolean Query Engine). See [**`DEVELOPMENT_STATUS.md`**](DEVELOPMENT_STATUS.md) and [**`docs/PHASE_5_INVERTED_INDEX_REPORT.md`**](docs/PHASE_5_INVERTED_INDEX_REPORT.md) for details.
+**Release 1 Complete — Phase 10 Verified:** 100% test pass rate across all 15,549 assertions (0 failures), 0 memory leaks, 0 undefined behavior, and 100% custom DSA compliance. The system is **CONDITIONALLY APPROVED** pending native Windows/MSVC v143 CI validation. Release 1 engineering activities are officially locked. See [**`DEVELOPMENT_STATUS.md`**](DEVELOPMENT_STATUS.md) and [**`docs/PHASE_10_FINAL_QA_REPORT.md`**](docs/PHASE_10_FINAL_QA_REPORT.md) for details.

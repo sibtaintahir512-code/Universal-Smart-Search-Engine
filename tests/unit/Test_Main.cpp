@@ -92,6 +92,28 @@ namespace sse::test {
     void runSearchEngineAdapterTests();
     void runThemeManagerTests();
     void runSearchWorkerTests();
+
+    // Phase 10 System Integration, Failure Testing & Final QA
+    void runIT01Tests();
+    void runIT02Tests();
+    void runIT03Tests();
+    void runIT04Tests();
+    void runIT05Tests();
+    void runIT06Tests();
+    void runIT07Tests();
+    void runIT08Tests();
+
+    void runFT01Tests();
+    void runFT02Tests();
+    void runFT03Tests();
+    void runFT04Tests();
+    void runFT05Tests();
+    void runFT06Tests();
+    void runFT07Tests();
+    void runFT08Tests();
+    void runFT09Tests();
+
+    void runPhase10Benchmarks();
 }
 
 int main(int argc, char* argv[]) {
@@ -206,7 +228,31 @@ int main(int argc, char* argv[]) {
     sse::test::runThemeManagerTests();
     sse::test::runSearchWorkerTests();
 
-    // 10. Print Final Summary
+    // 10. Run Phase 10 System Integration, Failure Testing & Final QA Suites
+    std::cout << "\n--- Executing Phase 10 Integration Test Suites (IT-01 through IT-08) ---" << std::endl;
+    sse::test::runIT01Tests();
+    sse::test::runIT02Tests();
+    sse::test::runIT03Tests();
+    sse::test::runIT04Tests();
+    sse::test::runIT05Tests();
+    sse::test::runIT06Tests();
+    sse::test::runIT07Tests();
+    sse::test::runIT08Tests();
+
+    std::cout << "\n--- Executing Phase 10 Failure & Edge-Case Test Suites (FT-01 through FT-09) ---" << std::endl;
+    sse::test::runFT01Tests();
+    sse::test::runFT02Tests();
+    sse::test::runFT03Tests();
+    sse::test::runFT04Tests();
+    sse::test::runFT05Tests();
+    sse::test::runFT06Tests();
+    sse::test::runFT07Tests();
+    sse::test::runFT08Tests();
+    sse::test::runFT09Tests();
+
+    sse::test::runPhase10Benchmarks();
+
+    // 11. Print Final Summary
     std::cout << "\n======================================================================" << std::endl;
     std::cout << " TEST EXECUTION SUMMARY" << std::endl;
     std::cout << "======================================================================" << std::endl;

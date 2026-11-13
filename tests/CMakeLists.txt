@@ -73,6 +73,11 @@ add_executable(UnitTestsRunner
     unit/Test_SearchEngineAdapter.cpp
     unit/Test_ThemeManager.cpp
     unit/Test_SearchWorker.cpp
+    benchmarks/SyntheticCorpusGenerator.cpp
+    integration/Test_Integration_IT01_IT04.cpp
+    integration/Test_Integration_IT05_IT08.cpp
+    integration/Test_Failure_FT01_FT09.cpp
+    benchmarks/Test_Phase10_Benchmarks.cpp
 )
 
 target_include_directories(UnitTestsRunner PRIVATE

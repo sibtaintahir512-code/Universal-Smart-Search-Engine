@@ -205,7 +205,8 @@ ScanStatistics FileScanner::scan(DocumentCatalog& catalog,
                 }
 
                 // Register file in DocumentCatalog
-                catalog.registerDocument(record.metadata, record.canonicalPath, record.filename);
+                DocID registeredId = catalog.registerDocument(record.metadata, record.canonicalPath, record.filename);
+                record.metadata.docId = registeredId;
                 ++m_stats.filesCataloged;
                 discoveredCanonPaths.push_back(record.canonicalPath);
 
