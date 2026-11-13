@@ -195,9 +195,17 @@ enable_sanitizers(SearchEngineApp)
 
 if(APPLE)
     set_target_properties(SearchEngineApp PROPERTIES
+        OUTPUT_NAME "Universal Smart Search Engine"
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "Universal Smart Search Engine"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.sibtain.universalsearchengine"
+        MACOSX_BUNDLE_BUNDLE_VERSION "1.0.0"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0.0"
         BUILD_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/lib"
-        INSTALL_RPATH "@executable_path/../lib;${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/lib"
+        INSTALL_RPATH "@executable_path/../Frameworks;@executable_path/../lib;${CMAKE_CURRENT_SOURCE_DIR}/third_party/pdfium/lib"
     )
+
+    install(TARGETS SearchEngineApp BUNDLE DESTINATION /Applications)
 endif()
 
 if(WIN32)
