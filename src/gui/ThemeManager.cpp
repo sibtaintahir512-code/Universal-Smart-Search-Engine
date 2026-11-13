@@ -303,7 +303,7 @@ QString ThemeManager::getDarkStyleSheet() {
             color: #9CA3AF;
             padding: 8px 16px;
             border-top-left-radius: 6px;
-            border-top-right-left: 6px;
+            border-top-right-radius: 6px;
             font-weight: 500;
         }
         QTabBar::tab:selected {
@@ -613,7 +613,7 @@ QString ThemeManager::getLightStyleSheet() {
             color: #64748B;
             padding: 8px 16px;
             border-top-left-radius: 6px;
-            border-top-right-left: 6px;
+            border-top-right-radius: 6px;
             font-weight: 500;
         }
         QTabBar::tab:selected {
